@@ -1,0 +1,58 @@
+---
+import Layout from '../components/Layout.astro';
+import { sources } from '../lib/mock';
+import { prettyDate } from '../lib/format';
+const statusMap = {
+  fresh: ['pill-leaf', 'Fresh'], warn: ['pill-gold', 'Ageing'], stale: ['pill-clay', 'Stale'], pending: ['pill-line', 'Pending'],
+} as const;
+---
+<Layout title="Sources & freshness · Salt" description="Every source Salt uses, its licence, and how fresh it is — published openly, on purpose.">
+  <section class="wrap page">
+    <p class="eyebrow" data-reveal>Sources</p>
+    <h1 data-reveal data-reveal-delay="60">Every number, traced. Published openly, on purpose.</h1>
+    <p class="lede" data-reveal data-reveal-delay="120">This is our operational dashboard — and yours. If a source goes stale, you’ll see it here before it misleads you. Neutrality only means something if it’s checkable.</p>
+
+    <div class="src-table card" data-reveal data-reveal-delay="160">
+      <div class="src-row src-head mono">
+        <span>Source</span><span>Tier</span><span>Licence</span><span>Cadence</span><span>Updated</span><span>Status</span>
+      </div>
+      {sources.map((s) => {
+        const [cls, label] = statusMap[s.status];
+        return (
+          <div class="src-row" data-reveal>
+            <div class="src-name"><strong>{s.name}</strong><span class="muted src-note">{s.note}</span></div>
+            <span><span class:list={['pill', s.tier === 1 ? 'pill-teal' : 'pill-line']}>Tier {s.tier}</span></span>
+            <span class="src-cell muted">{s.license}</span>
+            <span class="src-cell muted">{s.cadence}</span>
+            <span class="src-cell mono">{s.lastUpdated === '—' ? '—' : prettyDate(s.lastUpdated)}</span>
+            <span><span class:list={['pill', cls]}><span class="dot"></span> {label}{s.status !== 'pending' ? ` · ${s.staleDays}d` : ''}</span></span>
+          </div>
+        );
+      })}
+    </div>
+
+    <div class="src-legend grid" data-reveal>
+      <div class="card card-pad"><h3 class="serif">Tier 1 vs Tier 2</h3><p class="muted">Tier 1 is government / public data (NPPA, PMBJP). Tier 2 is community or commercial (GeoNames, e-pharmacies) — always labelled, and separable from the product with a config change.</p></div>
+      <div class="card card-pad"><h3 class="serif">Fail stale, not silent</h3><p class="muted">If a source is down we serve the last good snapshot with a visible marker rather than an error — and every raw fetch is archived, so any number can be replayed.</p></div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-4); }
+  .lede { margin-block: 0.8em 2em; }
+  .src-table { overflow: hidden; }
+  .src-row { display: grid; grid-template-columns: 2.4fr 0.7fr 1.2fr 1.2fr 1fr 1.1fr; gap: var(--sp-3); align-items: center; padding: 1em 1.2em; border-bottom: 1px solid var(--border); }
+  .src-row:last-child { border-bottom: none; }
+  .src-head { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); background: var(--paper-2); }
+  .src-name { display: flex; flex-direction: column; gap: 0.2em; }
+  .src-note { font-size: var(--step--1); }
+  .src-cell { font-size: var(--step--1); }
+  .src-legend { grid-template-columns: 1fr 1fr; margin-top: var(--sp-5); }
+  @media (max-width: 820px) {
+    .src-head { display: none; }
+    .src-row { grid-template-columns: 1fr 1fr; row-gap: 0.5em; }
+    .src-name { grid-column: 1 / -1; }
+    .src-legend { grid-template-columns: 1fr; }
+  }
+</style>

@@ -109,7 +109,7 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 | 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | 🟡 cascade + safety gates done; 500-pair eval + LLM adapter pending |
 | 7 | Equivalence engine + NTI list | Clinical review sign-off | 🟡 engine + NTI gate + tests done; NTI list awaiting named sign-off (U6) |
 | 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | 🟡 ladder engine + Hono API (`/v1/ladder`, `/v1/meta/health`) done & tested; needs canonical data + deploy |
-| 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | not started |
+| 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | 🟡 full front-end prototype on demo data (all pages/flows); real API wiring + Lighthouse pending |
 | 11 | Observability, staging gate, DR drill | Timed full restore from R2 | not started |
 | 12 | Launch | Live, indexed, `/sources` public | not started |
 

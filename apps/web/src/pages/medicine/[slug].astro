@@ -1,0 +1,276 @@
+---
+import Layout from '../../components/Layout.astro';
+import ProvenanceNote from '../../components/ProvenanceNote.astro';
+import { products, formulationById, moleculesOf } from '../../lib/mock';
+import { buildLadder } from '../../lib/ladder';
+import { inr, inr0, channelLabel, prettyDate } from '../../lib/format';
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const product = products.find((p) => p.slug === slug)!;
+const f = formulationById.get(product.formulationId)!;
+const mols = moleculesOf(f);
+const ladder = buildLadder(f.id, 30);
+const asOf = '2026-07-28';
+---
+<Layout title={`${product.brand} — price & cheaper equivalents · Salt`} description={`${product.brand} (${f.label}) price, the legal maximum, and every therapeutically-equivalent option ranked by price.`}>
+  <div class="wrap page">
+    <nav class="crumbs mono muted" aria-label="Breadcrumb">
+      <a href="/" class="ulink">Search</a> ›
+      <a href={`/molecule/${mols[0]?.slug}`} class="ulink">{mols[0]?.name}</a> ›
+      <span>{product.brand}</span>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="med-head" data-reveal>
+      <div>
+        <div class="cluster head-tags">
+          <span class="pill pill-teal">{channelLabel[product.channel]}</span>
+          {f.release !== 'IR' && <span class="pill pill-line">{f.release}</span>}
+          {ladder.isNti && <span class="pill pill-clay">Narrow therapeutic index</span>}
+        </div>
+        <h1 class="med-title">{product.brand}</h1>
+        <p class="med-sub serif">{f.label} · {f.form} · {product.packSize} {f.packUnit}s</p>
+        <p class="muted mono med-meta">{product.manufacturer} · prices as of {prettyDate(asOf)}</p>
+      </div>
+      <div class="med-price card card-pad">
+        <div class="mono muted">this pack</div>
+        <div class="med-price-num serif">{inr(product.mrp)}</div>
+        <div class="mono muted">{inr(product.mrp / product.packSize)} / {f.packUnit}</div>
+      </div>
+    </header>
+
+    <!-- LEGAL MAX -->
+    {ladder.legalMaxPerUnit !== null && (
+      <div class="legalmax card" data-reveal data-reveal-delay="60">
+        <span class="legalmax-icon" aria-hidden="true">⚖</span>
+        <div class="legalmax-body">
+          <div class="mono muted">Legal maximum · NPPA {ladder.ceilingCitation}</div>
+          <div class="legalmax-num mono">{inr(ladder.legalMaxPerUnit)} <span class="muted">/ {f.packUnit}</span></div>
+        </div>
+        <div class="legalmax-verdict">
+          {product.mrp / product.packSize > ladder.legalMaxPerUnit
+            ? <span class="pill pill-clay">This brand is above the ceiling</span>
+            : <span class="pill pill-leaf">This brand is within the ceiling</span>}
+        </div>
+      </div>
+    )}
+
+    <!-- CONTROLS -->
+    <section class="controls card card-pad" data-reveal data-reveal-delay="90"
+      data-formulation={f.id} data-unit={f.packUnit}>
+      <div class="ctrl">
+        <label class="ctrl-label mono">Quantity needed</label>
+        <div class="cluster">
+          <div class="seg" data-qty-seg>
+            {[10, 15, 30, 60, 90].map((q) => (
+              <button type="button" data-qty={q} aria-pressed={q === 30 ? 'true' : 'false'}>{q}</button>
+            ))}
+          </div>
+          <input class="field qty-input" type="number" min="1" max="1000" value="30" data-qty-input aria-label="Custom quantity" />
+          <span class="muted mono">{f.packUnit}s</span>
+        </div>
+      </div>
+      <div class="ctrl">
+        <label class="ctrl-label mono" for="pin">Nearby Jan Aushadhi (pincode)</label>
+        <input class="field" id="pin" inputmode="numeric" maxlength="6" placeholder="e.g. 560034" data-pin />
+      </div>
+      <div class="ctrl">
+        <label class="ctrl-label mono" for="quoted">Were you overcharged? (₹ / {f.packUnit})</label>
+        <input class="field" id="quoted" inputmode="decimal" placeholder={`e.g. ${(ladder.legalMaxPerUnit! + 0.5).toFixed(2)}`} data-quoted />
+      </div>
+    </section>
+
+    <!-- OVERCHARGE RESULT -->
+    <div class="overcharge" data-overcharge hidden></div>
+
+    <!-- LADDER -->
+    <section class="section-tight">
+      <div class="between ladder-head">
+        <h2 class="serif">Same medicine, lower price</h2>
+        <span class="muted mono" data-ladder-note>for 30 {f.packUnit}s</span>
+      </div>
+      {ladder.isNti && (
+        <p class="nti-note" data-reveal>
+          <strong>Ask your doctor before switching.</strong> This medicine needs consistent blood levels, so we show prices but don’t recommend a brand switch.
+        </p>
+      )}
+      <ol class="ladder" data-ladder></ol>
+    </section>
+
+    <!-- KENDRAS -->
+    <section class="section-tight" data-kendra-wrap hidden>
+      <h2 class="serif">Nearest Jan Aushadhi kendras</h2>
+      <p class="muted stock-note">ⓘ Availability is not verified — call ahead before travelling.</p>
+      <div class="kendras grid" data-kendra></div>
+    </section>
+
+    <ProvenanceNote sourceIds={ladder.sourceIds} asOf={asOf} />
+
+    <p class="advice mono">ⓘ Price information only, not medical advice. Talk to your doctor or pharmacist before changing any medicine.</p>
+  </div>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-4); }
+  .crumbs { font-size: var(--step--1); display: flex; gap: 0.5em; margin-bottom: 1.4em; flex-wrap: wrap; }
+  .med-head { display: grid; grid-template-columns: 1fr auto; gap: var(--sp-4); align-items: start; }
+  .head-tags { margin-bottom: 0.7em; }
+  .med-title { font-size: var(--step-4); }
+  .med-sub { font-size: var(--step-1); color: var(--ink-2); margin-top: 0.2em; }
+  .med-meta { font-size: var(--step--1); margin-top: 0.5em; }
+  .med-price { text-align: right; min-width: 150px; }
+  .med-price-num { font-size: var(--step-3); color: var(--teal); }
+
+  .legalmax { display: flex; align-items: center; gap: var(--sp-3); padding: 1em 1.2em; margin-top: var(--sp-4);
+    border-color: color-mix(in oklab, var(--gold) 45%, var(--border)); background: linear-gradient(100deg, var(--gold-soft), var(--card)); }
+  .legalmax-icon { font-size: 1.6rem; color: var(--gold); }
+  .legalmax-body { flex: 1; }
+  .legalmax-num { font-size: var(--step-2); color: var(--gold); font-weight: 600; }
+
+  .controls { display: grid; grid-template-columns: auto 1fr 1fr; gap: var(--sp-4); margin-top: var(--sp-4); }
+  .ctrl-label { display: block; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.5em; }
+  .qty-input { width: 5em; }
+  @media (max-width: 780px) { .controls { grid-template-columns: 1fr; } .med-head { grid-template-columns: 1fr; } .med-price { text-align: left; } }
+
+  .section-tight { margin-top: var(--sp-5); }
+  .ladder-head { margin-bottom: 1em; }
+  .nti-note { background: var(--clay-soft); color: var(--clay); padding: 0.9em 1.1em; border-radius: var(--r-2); margin-bottom: 1em; font-size: var(--step--1); }
+  .ladder { list-style: none; padding: 0; display: grid; gap: 0.5em; }
+
+  .advice { margin-top: var(--sp-5); font-size: var(--step--1); color: var(--ink-3); padding: 0.9em 1.1em; border: 1px dashed var(--border); border-radius: var(--r-2); }
+  .stock-note { font-size: var(--step--1); margin: 0.3em 0 1em; }
+  .kendras { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 620px) { .kendras { grid-template-columns: 1fr; } }
+
+  .overcharge { margin-top: var(--sp-4); }
+</style>
+
+<script>
+  import { buildLadder } from '../../lib/ladder';
+  import { findNearbyKendras } from '../../lib/kendra';
+  import { inr, inr0, channelLabel } from '../../lib/format';
+
+  function rowHtml(r: any, best: boolean, unit: string) {
+    const cta = r.verdict === 'CONSULT_REQUIRED'
+      ? `<span class="pill pill-clay">Consult</span>`
+      : (best ? `<span class="pill pill-leaf">✓ best price</span>`
+              : (r.savingVsCostliest > 0 ? `<span class="pill pill-leaf">save ${inr0(r.savingVsCostliest)}</span>` : `<span class="muted mono">—</span>`));
+    const over = r.overCeiling ? `<span class="pill pill-clay" title="Above the legal maximum">over ceiling</span>` : '';
+    return `<li class="lrow ${best ? 'best' : ''}">
+      <span class="lrank mono">${r.rank}</span>
+      <div class="lmain">
+        <div class="lbrand">${r.product.brand} <span class="pill pill-line lch">${channelLabel[r.product.channel]}</span> ${over}</div>
+        <div class="lsub muted mono">${r.product.manufacturer} · ${r.product.packSize}-${unit} pack · ${inr(r.unitPrice)}/${unit}</div>
+      </div>
+      <div class="lcost"><span class="lcost-num mono">${inr(r.effectiveCost)}</span><span class="lcost-lbl muted mono">${r.packsNeeded} pack${r.packsNeeded > 1 ? 's' : ''}</span></div>
+      <div class="lcta">${cta}</div>
+    </li>`;
+  }
+
+  function kendraHtml(k: any) {
+    return `<article class="kcard card card-pad">
+      <div class="between"><strong>${k.name.replace('Jan Aushadhi Kendra — ', '')}</strong><span class="pill pill-teal mono">${k.distanceKm} km</span></div>
+      <div class="muted" style="font-size:var(--step--1);margin-top:.3em">${k.address}, ${k.pincode}</div>
+      <div class="mono muted" style="font-size:.72rem;margin-top:.5em">${k.code}</div>
+    </article>`;
+  }
+
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const fid = Number(root.dataset.formulation);
+    const unit = root.dataset.unit || 'unit';
+    const seg = root.querySelector<HTMLElement>('[data-qty-seg]')!;
+    const qtyInput = root.querySelector<HTMLInputElement>('[data-qty-input]')!;
+    const pin = root.querySelector<HTMLInputElement>('[data-pin]')!;
+    const quoted = root.querySelector<HTMLInputElement>('[data-quoted]')!;
+    const ladderEl = document.querySelector<HTMLElement>('[data-ladder]')!;
+    const noteEl = document.querySelector<HTMLElement>('[data-ladder-note]')!;
+    const kWrap = document.querySelector<HTMLElement>('[data-kendra-wrap]')!;
+    const kEl = document.querySelector<HTMLElement>('[data-kendra]')!;
+    const ocEl = document.querySelector<HTMLElement>('[data-overcharge]')!;
+
+    let qty = 30;
+
+    const renderLadder = () => {
+      const q = quoted.value ? parseFloat(quoted.value) : undefined;
+      const l = buildLadder(fid, qty, Number.isFinite(q as number) ? q : undefined);
+      ladderEl.innerHTML = l.rows.map((r, i) => rowHtml({ ...r, rank: i + 1 }, i === 0, unit)).join('');
+      noteEl.textContent = `for ${qty} ${unit}s`;
+      // overcharge
+      if (l.overcharge) {
+        const o = l.overcharge;
+        ocEl.hidden = false;
+        ocEl.className = 'overcharge card card-pad ' + (o.isOvercharge ? 'oc-bad' : 'oc-ok');
+        ocEl.innerHTML = o.isOvercharge
+          ? `<div class="oc-h">You were overcharged.</div>
+             <p>At <span class="mono">${inr(o.quotedUnitPrice)}/${unit}</span>, that’s <strong class="mono">${inr(o.overByPerUnit)}</strong> over the legal maximum of <span class="mono">${inr(o.legalMaxPerUnit)}</span> — about <strong class="mono">${inr(o.overByTotal)}</strong> too much for ${qty} ${unit}s. You can report this to the NPPA.</p>
+             <a class="btn btn-accent btn-sm" href="/check-price">How to complain <span class="arrow">→</span></a>`
+          : `<div class="oc-h ok">Within the legal maximum.</div>
+             <p>At <span class="mono">${inr(o.quotedUnitPrice)}/${unit}</span> you’re paying at or below the ceiling of <span class="mono">${inr(o.legalMaxPerUnit)}</span>. Still — the Jan Aushadhi option above is cheaper.</p>`;
+      } else { ocEl.hidden = true; }
+    };
+
+    const renderKendras = () => {
+      const v = pin.value.trim();
+      if (!/^\d{6}$/.test(v)) { kWrap.hidden = true; return; }
+      const { centroidKnown, results } = findNearbyKendras(v, 4);
+      if (!centroidKnown) {
+        kWrap.hidden = false;
+        kEl.innerHTML = `<p class="muted">No demo coordinates for ${v}. Try <span class="mono">560034</span>, <span class="mono">110001</span>, <span class="mono">400001</span> or <span class="mono">600002</span>.</p>`;
+        return;
+      }
+      kWrap.hidden = false;
+      kEl.innerHTML = results.map(kendraHtml).join('');
+    };
+
+    seg.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-qty]');
+      if (!b) return;
+      qty = Number(b.dataset.qty);
+      qtyInput.value = String(qty);
+      seg.querySelectorAll('[data-qty]').forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      renderLadder();
+    });
+    qtyInput.addEventListener('input', () => {
+      const v = Math.max(1, Math.min(1000, Number(qtyInput.value) || 1));
+      qty = v;
+      seg.querySelectorAll('[data-qty]').forEach((x) => x.setAttribute('aria-pressed', Number((x as HTMLElement).dataset.qty) === v ? 'true' : 'false'));
+      renderLadder();
+    });
+    let pt: number; pin.addEventListener('input', () => { clearTimeout(pt); pt = window.setTimeout(renderKendras, 250); });
+    let qt: number; quoted.addEventListener('input', () => { clearTimeout(qt); qt = window.setTimeout(renderLadder, 200); });
+
+    renderLadder();
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.controls').forEach(wire);
+  });
+</script>
+
+<style is:global>
+  .lrow { display: grid; grid-template-columns: 1.6em 1fr auto auto; align-items: center; gap: var(--sp-3);
+    padding: 0.85em 1em; border: 1px solid var(--border); border-radius: var(--r-3); background: var(--card);
+    transition: transform 0.2s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+    animation: pop-in 0.3s var(--ease-out) both; }
+  .lrow:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .lrow.best { border-color: color-mix(in oklab, var(--leaf) 45%, transparent); background: linear-gradient(100deg, var(--leaf-soft), var(--card)); }
+  .lrank { color: var(--ink-3); font-weight: 600; }
+  .lbrand { font-weight: 650; display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
+  .lch { font-size: 0.62rem; }
+  .lsub { font-size: var(--step--1); margin-top: 0.25em; }
+  .lcost { text-align: right; }
+  .lcost-num { font-size: var(--step-1); font-weight: 700; display: block; }
+  .lcost-lbl { font-size: 0.72rem; }
+  .lcta { min-width: 90px; text-align: right; }
+  .oc-bad { border-color: color-mix(in oklab, var(--clay) 45%, transparent); background: linear-gradient(100deg, var(--clay-soft), var(--card)); }
+  .oc-ok { border-color: color-mix(in oklab, var(--leaf) 40%, transparent); background: linear-gradient(100deg, var(--leaf-soft), var(--card)); }
+  .oc-h { font-family: var(--font-display); font-size: var(--step-1); color: var(--clay); margin-bottom: 0.3em; }
+  .oc-h.ok { color: var(--leaf); }
+  .overcharge p { font-size: var(--step--1); margin-bottom: 0.8em; }
+  @media (max-width: 620px) { .lrow { grid-template-columns: 1.4em 1fr auto; } .lcta { grid-column: 2 / -1; text-align: left; min-width: 0; } }
+</style>

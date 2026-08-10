@@ -1,0 +1,79 @@
+---
+import Layout from '../../components/Layout.astro';
+import { molecules, formulationsForMolecule, productsForFormulation, ceilingByFormulation } from '../../lib/mock';
+import { buildLadder } from '../../lib/ladder';
+import { inr } from '../../lib/format';
+
+export function getStaticPaths() {
+  return molecules.map((m) => ({ params: { slug: m.slug } }));
+}
+const { slug } = Astro.params;
+const m = molecules.find((x) => x.slug === slug)!;
+const forms = formulationsForMolecule(m.slug);
+const rows = forms.map((f) => {
+  const l = buildLadder(f.id, 30);
+  return { f, l, brands: productsForFormulation(f.id).length };
+});
+---
+<Layout title={`${m.name} — brands, prices & the legal maximum · Salt`} description={`${m.name}: ${m.klass}. Every formulation and brand ranked by price, with the NPPA ceiling.`}>
+  <section class="wrap page">
+    <nav class="crumbs mono muted"><a href="/" class="ulink">Search</a> › <span>{m.name}</span></nav>
+    <div class="mol-head" data-reveal>
+      <div>
+        <div class="cluster">
+          <span class="pill pill-teal">{m.klass}</span>
+          {m.isNti && <span class="pill pill-clay">Narrow therapeutic index</span>}
+        </div>
+        <h1 class="mol-title">{m.name}</h1>
+        <p class="lede">{m.about}</p>
+      </div>
+    </div>
+
+    {m.isNti && (
+      <p class="nti-note" data-reveal>
+        <strong>Consistency matters for this molecule.</strong> We show prices, but a brand switch should be a conversation with your doctor — not an app’s suggestion.
+      </p>
+    )}
+
+    <h2 class="serif sec-h" data-reveal>Formulations</h2>
+    <div class="forms grid">
+      {rows.map(({ f, l, brands }, i) => (
+        <a class="fcard card card-pad" href={`/formulation/${f.slug}`} data-reveal data-reveal-delay={i * 60}>
+          <div class="between">
+            <div>
+              <div class="fcard-label serif">{f.label}</div>
+              <div class="muted mono fcard-meta">{f.form} · {f.release} · {brands} brands</div>
+            </div>
+            {l.legalMaxPerUnit && <span class="pill pill-gold">max {inr(l.legalMaxPerUnit)}</span>}
+          </div>
+          <div class="fcard-range">
+            <div><div class="mono muted">from (Jan Aushadhi)</div><div class="fcard-lo mono">{inr(l.cheapest!.unitPrice)}<span>/unit</span></div></div>
+            <div class="fcard-arrow">→</div>
+            <div><div class="mono muted">up to</div><div class="fcard-hi mono">{inr(Math.max(...l.rows.map((r) => r.unitPrice)))}<span>/unit</span></div></div>
+          </div>
+          <div class="fcard-cta">See the price ladder <span class="arrow">→</span></div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-4); }
+  .crumbs { font-size: var(--step--1); display: flex; gap: 0.5em; margin-bottom: 1.4em; }
+  .mol-title { font-size: var(--step-4); margin: 0.4em 0 0.3em; }
+  .nti-note { background: var(--clay-soft); color: var(--clay); padding: 0.9em 1.1em; border-radius: var(--r-2); margin-top: var(--sp-3); font-size: var(--step--1); }
+  .sec-h { margin: var(--sp-5) 0 var(--sp-3); }
+  .forms { grid-template-columns: repeat(2, 1fr); }
+  .fcard { transition: transform 0.25s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease); }
+  .fcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-color: var(--line-2); }
+  .fcard-label { font-size: var(--step-1); }
+  .fcard-meta { font-size: var(--step--1); margin-top: 0.2em; }
+  .fcard-range { display: flex; align-items: center; gap: var(--sp-3); margin: 1.1em 0 0.9em; }
+  .fcard-lo { font-size: var(--step-2); color: var(--leaf); font-weight: 700; }
+  .fcard-hi { font-size: var(--step-2); color: var(--ink-2); font-weight: 700; }
+  .fcard-lo span, .fcard-hi span { font-size: 0.6em; color: var(--ink-3); font-family: var(--font-sans); }
+  .fcard-arrow { color: var(--ink-3); }
+  .fcard-cta { font-weight: 600; color: var(--teal); font-size: var(--step--1); }
+  @media (max-width: 680px) { .forms { grid-template-columns: 1fr; } }
+</style>

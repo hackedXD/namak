@@ -1,0 +1,57 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import DemoBanner from './DemoBanner.astro';
+
+interface Props { title?: string; description?: string; wide?: boolean }
+const {
+  title = 'Salt — India’s neutral medicine price index',
+  description = 'Search any medicine and see every equivalent option ranked by price — including Jan Aushadhi and the legal maximum price. Never sold, never sponsored.',
+} = Astro.props;
+
+const favicon =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230C5049'/%3E%3Ctext x='16' y='23' font-size='19' font-family='Georgia,serif' fill='%23FBF7EF' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0C5049" />
+    <link rel="icon" href={favicon} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <ClientRouter />
+    <script is:inline>
+      // set theme before paint to avoid flash
+      (() => {
+        try {
+          const t = localStorage.getItem('salt-theme');
+          if (t) document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="visually-hidden">Skip to content</a>
+    <DemoBanner />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      import { initAll } from '../lib/motion';
+      document.addEventListener('astro:page-load', initAll);
+    </script>
+  </body>
+</html>

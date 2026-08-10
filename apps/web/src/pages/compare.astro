@@ -1,0 +1,103 @@
+---
+import Layout from '../components/Layout.astro';
+import { products, formulationById } from '../lib/mock';
+---
+<Layout title="Compare two medicines · Salt" description="Put two products side by side — price, the legal maximum, and whether they’re actually interchangeable.">
+  <section class="wrap page" data-compare>
+    <p class="eyebrow" data-reveal>Compare</p>
+    <h1 data-reveal data-reveal-delay="60">Two medicines, side by side.</h1>
+    <p class="lede" data-reveal data-reveal-delay="120">Are they actually the same medicine? We check the molecule, strength, salt form and release — not just the name.</p>
+
+    <div class="cmp-pickers card card-pad" data-reveal>
+      <label class="ctrl"><span class="ctrl-label mono">Product A</span>
+        <select class="field" data-a>{products.map((p) => <option value={p.slug} selected={p.slug === 'dolo-650'}>{p.brand}</option>)}</select>
+      </label>
+      <span class="cmp-vs serif">vs</span>
+      <label class="ctrl"><span class="ctrl-label mono">Product B</span>
+        <select class="field" data-b>{products.map((p) => <option value={p.slug} selected={p.slug === 'paracetamol-650'}>{p.brand}</option>)}</select>
+      </label>
+    </div>
+
+    <div class="cmp-verdict" data-verdict></div>
+    <div class="cmp-grid" data-cols></div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); }
+  .lede { margin-block: 0.8em 2em; }
+  .cmp-pickers { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--sp-3); align-items: end; }
+  .ctrl-label { display: block; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.5em; }
+  .cmp-vs { font-size: var(--step-2); color: var(--ink-3); padding-bottom: 0.2em; }
+  .cmp-verdict { margin-top: var(--sp-4); }
+  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-3); }
+  @media (max-width: 620px) { .cmp-pickers, .cmp-grid { grid-template-columns: 1fr; } .cmp-vs { justify-self: center; } }
+</style>
+
+<script>
+  import { productBySlug, formulationById, moleculesOf } from '../lib/mock';
+  import { buildLadder } from '../lib/ladder';
+  import { inr, channelLabel } from '../lib/format';
+
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const a = root.querySelector<HTMLSelectElement>('[data-a]')!;
+    const b = root.querySelector<HTMLSelectElement>('[data-b]')!;
+    const verdictEl = root.querySelector<HTMLElement>('[data-verdict]')!;
+    const colsEl = root.querySelector<HTMLElement>('[data-cols]')!;
+
+    const col = (slug: string, qty = 30) => {
+      const p = productBySlug.get(slug)!;
+      const f = formulationById.get(p.formulationId)!;
+      const l = buildLadder(f.id, qty);
+      const unitPrice = Math.round((p.mrp / p.packSize) * 100) / 100;
+      const eff = Math.ceil(qty / p.packSize) * p.mrp;
+      const over = l.legalMaxPerUnit !== null && unitPrice > l.legalMaxPerUnit;
+      return { p, f, l, unitPrice, eff: Math.round(eff * 100) / 100, over };
+    };
+
+    const render = () => {
+      const A = col(a.value), B = col(b.value);
+      const sameForm = A.f.id === B.f.id;
+      const isNti = moleculesOf(A.f).some((m) => m.isNti) || moleculesOf(B.f).some((m) => m.isNti);
+      let vClass = 'pill-leaf', vText = 'Interchangeable — same molecule, strength, form & release.';
+      if (!sameForm) {
+        const sameMol = A.f.moleculeSlugs.join() === B.f.moleculeSlugs.join();
+        vClass = 'pill-clay';
+        vText = sameMol ? 'Not interchangeable — same molecule but a different strength or release.' : 'Not interchangeable — different active ingredients.';
+      } else if (isNti) { vClass = 'pill-gold'; vText = 'Same formulation — but this is a narrow-therapeutic-index medicine. Consult your doctor before switching brands.'; }
+
+      const cheaper = A.eff <= B.eff ? A : B;
+      const delta = Math.abs(A.eff - B.eff);
+      verdictEl.innerHTML = `<div class="card card-pad cmp-vcard">
+        <span class="pill ${vClass}">${vText}</span>
+        ${sameForm && delta > 0 ? `<p class="cmp-delta">Choosing <strong>${cheaper.p.brand}</strong> saves <strong class="mono">${inr(delta)}</strong> for 30 ${A.f.packUnit}s.</p>` : ''}
+      </div>`;
+
+      const card = (c: any, cheapest: boolean) => `<div class="card card-pad cmp-col ${cheapest ? 'cmp-best' : ''}">
+        <div class="between"><h3 class="serif" style="font-size:var(--step-1)">${c.p.brand}</h3>${cheapest ? '<span class="pill pill-leaf">cheaper</span>' : ''}</div>
+        <div class="muted mono" style="font-size:var(--step--1);margin:.2em 0 1em">${c.f.label} · ${channelLabel[c.p.channel]} · ${c.p.manufacturer}</div>
+        <dl class="cmp-dl">
+          <div><dt>Per ${c.f.packUnit}</dt><dd class="mono">${inr(c.unitPrice)}</dd></div>
+          <div><dt>Pack</dt><dd class="mono">${c.p.packSize} × ${inr(c.p.mrp)}</dd></div>
+          <div><dt>For 30 ${c.f.packUnit}s</dt><dd class="mono" style="font-weight:700">${inr(c.eff)}</dd></div>
+          <div><dt>Legal max</dt><dd class="mono">${c.l.legalMaxPerUnit ? inr(c.l.legalMaxPerUnit) : '—'} ${c.over ? '<span class="pill pill-clay">over</span>' : ''}</dd></div>
+        </dl>
+        <a class="btn btn-outline btn-sm btn-block" href="/medicine/${c.p.slug}">Full ladder →</a>
+      </div>`;
+      colsEl.innerHTML = card(A, A.eff <= B.eff) + card(B, B.eff < A.eff);
+    };
+    a.addEventListener('change', render); b.addEventListener('change', render);
+    render();
+  }
+  document.addEventListener('astro:page-load', () => document.querySelectorAll<HTMLElement>('[data-compare]').forEach(wire));
+</script>
+
+<style is:global>
+  .cmp-vcard { text-align: center; }
+  .cmp-delta { margin-top: 0.8em; font-size: var(--step--1); color: var(--ink-2); }
+  .cmp-best { border-color: color-mix(in oklab, var(--leaf) 40%, transparent); }
+  .cmp-dl { display: grid; gap: 0.6em; margin-bottom: 1.2em; }
+  .cmp-dl > div { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5em; border-bottom: 1px solid var(--border); }
+  .cmp-dl dt { color: var(--ink-3); font-size: var(--step--1); }
+</style>

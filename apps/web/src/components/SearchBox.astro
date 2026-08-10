@@ -1,0 +1,105 @@
+---
+interface Props { compact?: boolean; big?: boolean; autofocus?: boolean; placeholder?: string }
+const { compact = false, big = false, autofocus = false, placeholder = 'Search a medicine, brand or molecule…' } = Astro.props;
+const id = 'sb-' + Math.random().toString(36).slice(2, 8);
+---
+<div class:list={['searchbox', { compact, big }]} data-searchbox>
+  <form action="/search" method="get" role="search" class="sb-form">
+    <svg class="sb-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+    <input
+      id={id} name="q" type="search" class="sb-input field" autocomplete="off"
+      placeholder={placeholder} aria-label="Search medicines"
+      aria-expanded="false" aria-controls={id + '-list'} role="combobox"
+      autofocus={autofocus} />
+    <kbd class="sb-kbd">↵</kbd>
+  </form>
+  <ul class="sb-results" id={id + '-list'} role="listbox" hidden></ul>
+</div>
+
+<style>
+  .searchbox { position: relative; width: 100%; }
+  .sb-form { position: relative; display: flex; align-items: center; }
+  .sb-icon { position: absolute; left: 0.9em; color: var(--ink-3); pointer-events: none; }
+  .sb-input { padding-left: 2.6em; padding-right: 2.4em; }
+  .searchbox.big .sb-input { padding-block: 1.05em; font-size: var(--step-1); border-radius: var(--r-3); }
+  .searchbox.compact .sb-input { padding-block: 0.55em; background: var(--paper-2); }
+  .sb-kbd {
+    position: absolute; right: 0.7em; font-family: var(--font-mono); font-size: 0.72em;
+    color: var(--ink-3); border: 1px solid var(--border); border-radius: 5px; padding: 0.1em 0.45em; background: var(--card);
+  }
+  .sb-results {
+    position: absolute; top: calc(100% + 0.5em); left: 0; right: 0; z-index: 60;
+    list-style: none; margin: 0; padding: 0.4em; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--r-3); box-shadow: var(--shadow-3);
+    max-height: 62vh; overflow: auto; animation: pop-in 0.18s var(--ease-out);
+  }
+  .sb-item { display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0.7em; border-radius: var(--r-2); cursor: pointer; }
+  .sb-item[aria-selected='true'], .sb-item:hover { background: var(--paper-2); }
+  .sb-badge { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25em 0.5em; border-radius: var(--r-full); flex-shrink: 0; }
+  .sb-badge.product { background: var(--saffron-soft); color: var(--saffron-2); }
+  .sb-badge.molecule { background: var(--teal-soft); color: var(--teal-ink); }
+  .sb-badge.formulation { background: var(--paper-3); color: var(--ink-2); }
+  .sb-text { min-width: 0; }
+  .sb-title { font-weight: 600; }
+  .sb-sub { font-size: var(--step--1); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-empty { padding: 0.9em; color: var(--muted); font-size: var(--step--1); }
+</style>
+
+<script>
+  import { searchAll } from '../lib/search';
+
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return;
+    root.dataset.wired = '1';
+    const input = root.querySelector<HTMLInputElement>('.sb-input')!;
+    const list = root.querySelector<HTMLUListElement>('.sb-results')!;
+    let items: { href: string }[] = [];
+    let active = -1;
+
+    const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+    const render = (q: string) => {
+      const hits = searchAll(q, 8);
+      items = hits;
+      if (!q) { close(); return; }
+      if (!hits.length) {
+        list.innerHTML = `<li class="sb-empty">No matches for “${q}”. Try a molecule like <em>paracetamol</em>.</li>`;
+      } else {
+        list.innerHTML = hits.map((h, i) => `
+          <li class="sb-item" role="option" data-href="${h.href}" data-i="${i}" aria-selected="false">
+            <span class="sb-badge ${h.type}">${h.type}</span>
+            <span class="sb-text">
+              <div class="sb-title">${h.title}</div>
+              <div class="sb-sub">${h.subtitle}</div>
+            </span>
+          </li>`).join('');
+      }
+      list.hidden = false; input.setAttribute('aria-expanded', 'true'); active = -1;
+    };
+    const setActive = (i: number) => {
+      const opts = [...list.querySelectorAll<HTMLElement>('.sb-item')];
+      opts.forEach((o) => o.setAttribute('aria-selected', 'false'));
+      active = (i + opts.length) % Math.max(opts.length, 1);
+      const el = opts[active];
+      if (el) { el.setAttribute('aria-selected', 'true'); el.scrollIntoView({ block: 'nearest' }); }
+    };
+
+    let t: number;
+    input.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(() => render(input.value), 90); });
+    input.addEventListener('focus', () => { if (input.value) render(input.value); });
+    input.addEventListener('keydown', (e) => {
+      if (list.hidden) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+      else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); location.href = items[active].href; }
+      else if (e.key === 'Escape') close();
+    });
+    list.addEventListener('click', (e) => {
+      const li = (e.target as HTMLElement).closest<HTMLElement>('.sb-item');
+      if (li?.dataset.href) location.href = li.dataset.href;
+    });
+    document.addEventListener('click', (e) => { if (!root.contains(e.target as Node)) close(); });
+  }
+
+  const boot = () => document.querySelectorAll<HTMLElement>('[data-searchbox]').forEach(wire);
+  document.addEventListener('astro:page-load', boot);
+</script>

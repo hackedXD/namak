@@ -1,0 +1,21 @@
+{
+  "name": "@salt/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Astro front-end (design §6). Interaction plane — SSG + islands.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "test": "echo '@salt/web: e2e later' && exit 0",
+    "lint": "echo noop && exit 0"
+  },
+  "dependencies": {
+    "astro": "^5.1.1",
+    "@fontsource-variable/fraunces": "^5.1.0",
+    "@fontsource-variable/hanken-grotesk": "^5.1.0",
+    "@fontsource-variable/jetbrains-mono": "^5.1.0"
+  }
+}

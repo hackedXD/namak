@@ -1,0 +1,39 @@
+---
+const cols = [
+  { h: 'Product', links: [['/', 'Search'], ['/check-price', 'Overcharge check'], ['/scan', 'Scan a prescription'], ['/basket', 'Basket']] },
+  { h: 'Trust', links: [['/methodology', 'Methodology'], ['/sources', 'Sources & freshness'], ['/methodology#neutrality', 'Why we’re neutral'], ['/methodology#dispute', 'Dispute a price']] },
+];
+const year = 2026;
+---
+<footer class="site-footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">S</span><span>Salt</span></div>
+      <p class="muted foot-tag">India’s neutral medicine price index. We never stock, sell, or dispense — the only place showing every legal option including the government’s, plus the maximum price the law permits.</p>
+      <p class="pill pill-line">Not medical advice · Talk to your doctor before changing any medicine</p>
+    </div>
+    {cols.map((c) => (
+      <nav class="foot-col" aria-label={c.h}>
+        <h4 class="foot-h">{c.h}</h4>
+        <ul>{c.links.map(([href, label]) => <li><a href={href} class="ulink">{label}</a></li>)}</ul>
+      </nav>
+    ))}
+  </div>
+  <div class="wrap foot-base">
+    <span class="mono">© {year} Salt · a public-interest price index</span>
+    <span class="mono muted">Made for patients, paid by cost-bearers — never by sellers.</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer { border-top: 1px solid var(--border); margin-top: var(--sp-7); background: var(--paper-2); }
+  .foot-inner { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: var(--sp-5); padding-block: var(--sp-6) var(--sp-4); }
+  .foot-brand .brand { display: inline-flex; align-items: center; gap: 0.5em; font-family: var(--font-display); font-size: 1.3rem; }
+  .foot-brand .brand-mark { display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 8px; background: var(--teal); color: #fff; font-size: 0.85em; }
+  .foot-tag { max-width: 46ch; margin-block: 0.8em; }
+  .foot-h { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.8em; }
+  .foot-col ul { list-style: none; padding: 0; display: grid; gap: 0.55em; }
+  .foot-col a { color: var(--ink-2); font-weight: 500; }
+  .foot-base { display: flex; justify-content: space-between; gap: var(--sp-3); padding-block: var(--sp-4); border-top: 1px solid var(--border); font-size: var(--step--1); flex-wrap: wrap; }
+  @media (max-width: 760px) { .foot-inner { grid-template-columns: 1fr 1fr; } .foot-brand { grid-column: 1 / -1; } }
+</style>

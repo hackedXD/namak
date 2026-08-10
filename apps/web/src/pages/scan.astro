@@ -1,0 +1,170 @@
+---
+import Layout from '../components/Layout.astro';
+---
+<Layout title="Scan a prescription · Salt" description="Photograph a prescription and see the cheaper equivalent for every line. Images are processed and discarded — never stored.">
+  <section class="wrap wrap-narrow page" data-scan>
+    <p class="eyebrow" data-reveal>Prescription scan · preview</p>
+    <h1 data-reveal data-reveal-delay="60">Photograph a prescription. See every line, cheaper.</h1>
+    <p class="lede" data-reveal data-reveal-delay="120">We read each line, resolve it to its formulation, and price the whole basket. You confirm every line before anything is computed — nothing is auto-accepted.</p>
+
+    <!-- STAGE: idle -->
+    <div class="scan-stage" data-stage="idle">
+      <div class="dropzone" data-drop>
+        <div class="dz-icon" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M9 15h6M9 12h3"></path></svg>
+        </div>
+        <p class="dz-title">Drop a prescription photo, or</p>
+        <button class="btn btn-accent" data-demo>Try with a demo prescription <span class="arrow">→</span></button>
+        <p class="dz-note mono muted">🔒 Demo only — no image is uploaded, processed, or stored. In production, images are deleted within 60 seconds of extraction.</p>
+      </div>
+    </div>
+
+    <!-- STAGE: processing -->
+    <div class="scan-stage" data-stage="processing" hidden>
+      <div class="card card-pad proc">
+        <div class="proc-spinner" aria-hidden="true"></div>
+        <div><div class="proc-h serif" data-proc-h>Reading the prescription…</div><div class="muted mono" data-proc-sub>Stage A · cheap vision pass</div></div>
+      </div>
+    </div>
+
+    <!-- STAGE: review -->
+    <div class="scan-stage" data-stage="review" hidden>
+      <div class="between review-head"><h2 class="serif">Confirm each line</h2><span class="pill pill-line mono" data-review-count></span></div>
+      <p class="muted review-note">Lines below the confidence threshold are highlighted — confirm or edit them before we build your basket.</p>
+      <ul class="rx-lines" data-lines></ul>
+      <button class="btn btn-ink btn-lg btn-block" data-build>Build my basket <span class="arrow">→</span></button>
+    </div>
+
+    <!-- STAGE: results -->
+    <div class="scan-stage" data-stage="results" hidden>
+      <div class="basket-total card card-pad" data-reveal>
+        <div><div class="mono muted">basket saving vs typical branded</div><div class="bt-num serif" data-total>₹0</div></div>
+        <button class="btn btn-outline btn-sm" data-restart>Scan another</button>
+      </div>
+      <ul class="ladder" data-results></ul>
+      <p class="advice mono">ⓘ Confirm dosing with your doctor. We show price options only, never a switch recommendation for narrow-therapeutic-index medicines.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); min-height: 62vh; }
+  .lede { margin-block: 0.8em 2em; }
+  .dropzone { border: 2px dashed var(--line-2); border-radius: var(--r-4); padding: clamp(2rem, 6vw, 3.5rem); text-align: center; background: var(--paper-2); transition: border-color 0.3s var(--ease), background 0.3s var(--ease); }
+  .dropzone.drag { border-color: var(--teal); background: var(--teal-soft); }
+  .dz-icon { color: var(--teal); display: grid; place-items: center; width: 4em; height: 4em; margin: 0 auto 1em; border-radius: var(--r-3); background: var(--card); box-shadow: var(--shadow-1); }
+  .dz-title { font-size: var(--step-1); margin-bottom: 1em; }
+  .dz-note { font-size: 0.72rem; margin-top: 1.4em; max-width: 42ch; margin-inline: auto; }
+  .proc { display: flex; align-items: center; gap: var(--sp-4); }
+  .proc-spinner { width: 2.4em; height: 2.4em; border-radius: 50%; border: 3px solid var(--paper-3); border-top-color: var(--teal); animation: spin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .proc-h { font-size: var(--step-1); }
+  .review-head { margin-bottom: 0.4em; }
+  .review-note { font-size: var(--step--1); margin-bottom: 1.2em; }
+  .rx-lines { list-style: none; padding: 0; display: grid; gap: 0.7em; margin-bottom: var(--sp-4); }
+  .basket-total { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); border-color: color-mix(in oklab, var(--leaf) 35%, var(--border)); background: linear-gradient(100deg, var(--leaf-soft), var(--card)); }
+  .bt-num { font-size: var(--step-4); color: var(--leaf); }
+</style>
+
+<script>
+  import { buildLadder } from '../lib/ladder';
+  import { formulationById } from '../lib/mock';
+  import { inr, inr0, channelLabel } from '../lib/format';
+
+  // Demo prescription: raw lines → resolved formulation + confidence.
+  const DEMO = [
+    { raw: 'Tab. DOLO 650  1-0-1 × 5 days', fid: 4412, qty: 10, conf: 0.97 },
+    { raw: 'Tab. GLYCOMET 500  1-0-1', fid: 5001, qty: 30, conf: 0.94 },
+    { raw: 'Tab. TELMA 40  1-0-0', fid: 6100, qty: 30, conf: 0.88 },
+    { raw: 'Tab. Pan-40  0-0-1 (before food)', fid: 8001, qty: 15, conf: 0.72 },
+  ];
+
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const stage = (name: string) => {
+      root.querySelectorAll<HTMLElement>('.scan-stage').forEach((s) => (s.hidden = s.dataset.stage !== name));
+    };
+    const drop = root.querySelector<HTMLElement>('[data-drop]')!;
+    const demoBtn = root.querySelector<HTMLButtonElement>('[data-demo]')!;
+    const linesEl = root.querySelector<HTMLElement>('[data-lines]')!;
+    const buildBtn = root.querySelector<HTMLButtonElement>('[data-build]')!;
+    const resultsEl = root.querySelector<HTMLElement>('[data-results]')!;
+    const totalEl = root.querySelector<HTMLElement>('[data-total]')!;
+    const restart = root.querySelector<HTMLButtonElement>('[data-restart]')!;
+    const procH = root.querySelector<HTMLElement>('[data-proc-h]')!;
+    const procSub = root.querySelector<HTMLElement>('[data-proc-sub]')!;
+    const reviewCount = root.querySelector<HTMLElement>('[data-review-count]')!;
+
+    let lines = DEMO.map((d) => ({ ...d, confirmed: d.conf >= 0.85 }));
+
+    const process = () => {
+      stage('processing');
+      procH.textContent = 'Reading the prescription…'; procSub.textContent = 'Stage A · cheap vision pass';
+      setTimeout(() => { procH.textContent = 'Escalating 1 low-confidence line…'; procSub.textContent = 'Stage B · stronger model'; }, 900);
+      setTimeout(renderReview, 1800);
+    };
+
+    const renderReview = () => {
+      stage('review');
+      reviewCount.textContent = `${lines.length} lines`;
+      linesEl.innerHTML = lines.map((l, i) => {
+        const f = formulationById.get(l.fid)!;
+        const low = l.conf < 0.85;
+        return `<li class="rx card card-pad ${low ? 'rx-low' : ''}" data-i="${i}">
+          <div class="between">
+            <div class="rx-raw mono">${l.raw}</div>
+            <span class="pill ${low ? 'pill-clay' : 'pill-leaf'} mono">${Math.round(l.conf * 100)}%</span>
+          </div>
+          <div class="rx-resolved">→ <strong>${f.label}</strong> · qty ${l.qty}</div>
+          ${low ? `<div class="rx-confirm"><span class="muted">Low confidence — please confirm:</span>
+            <button class="btn btn-sm ${l.confirmed ? 'btn-ink' : 'btn-outline'}" data-confirm="${i}">${l.confirmed ? '✓ Confirmed' : 'Confirm'}</button></div>` : ''}
+        </li>`;
+      }).join('');
+      linesEl.querySelectorAll<HTMLElement>('[data-confirm]').forEach((b) => b.addEventListener('click', () => {
+        const i = Number(b.dataset.confirm); lines[i].confirmed = !lines[i].confirmed; renderReview();
+      }));
+      buildBtn.disabled = !lines.every((l) => l.confirmed);
+      buildBtn.textContent = buildBtn.disabled ? 'Confirm all lines to continue' : 'Build my basket →';
+    };
+
+    const renderResults = () => {
+      stage('results');
+      let total = 0;
+      resultsEl.innerHTML = lines.map((l) => {
+        const view = buildLadder(l.fid, l.qty);
+        const best = view.rows[0]!;
+        const costliest = view.rows[view.rows.length - 1]!;
+        const saving = Math.round((costliest.effectiveCost - best.effectiveCost));
+        total += saving;
+        return `<li class="lrow best">
+          <span class="lrank mono">✓</span>
+          <div class="lmain">
+            <div class="lbrand">${view.formulationLabel} <span class="pill pill-line lch">${channelLabel[best.product.channel]}</span></div>
+            <div class="lsub muted mono">cheapest: ${best.product.brand} · qty ${l.qty} · ${inr(best.effectiveCost)}</div>
+          </div>
+          <div class="lcost"><span class="lcost-num mono">${inr(best.effectiveCost)}</span><span class="lcost-lbl muted mono">vs ${inr(costliest.effectiveCost)}</span></div>
+          <div class="lcta"><span class="pill pill-leaf">save ${inr0(saving)}</span></div>
+        </li>`;
+      }).join('');
+      // count up total
+      const start = performance.now(); const dur = 900;
+      const tick = (now: number) => { const t = Math.min(1, (now - start) / dur); totalEl.textContent = inr0(total * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    };
+
+    demoBtn.addEventListener('click', process);
+    ['dragover', 'dragenter'].forEach((e) => drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('drag'); }));
+    ['dragleave', 'drop'].forEach((e) => drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.remove('drag'); if (e === 'drop') process(); }));
+    buildBtn.addEventListener('click', () => { if (!buildBtn.disabled) renderResults(); });
+    restart.addEventListener('click', () => { lines = DEMO.map((d) => ({ ...d, confirmed: d.conf >= 0.85 })); stage('idle'); });
+  }
+  document.addEventListener('astro:page-load', () => document.querySelectorAll<HTMLElement>('[data-scan]').forEach(wire));
+</script>
+
+<style is:global>
+  .rx-raw { font-size: var(--step--1); font-weight: 600; }
+  .rx-resolved { margin-top: 0.5em; font-size: var(--step--1); color: var(--ink-2); }
+  .rx-low { border-color: color-mix(in oklab, var(--clay) 35%, var(--border)); background: linear-gradient(100deg, var(--clay-soft), var(--card)); }
+  .rx-confirm { margin-top: 0.7em; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); font-size: var(--step--1); }
+  .advice { margin-top: var(--sp-4); font-size: var(--step--1); color: var(--ink-3); padding: 0.9em 1.1em; border: 1px dashed var(--border); border-radius: var(--r-2); }
+</style>

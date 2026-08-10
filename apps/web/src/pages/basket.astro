@@ -1,0 +1,97 @@
+---
+import Layout from '../components/Layout.astro';
+import { formulations } from '../lib/mock';
+---
+<Layout title="Basket · Salt" description="Add your regular medicines and see the total you could save each refill.">
+  <section class="wrap wrap-narrow page" data-basket>
+    <p class="eyebrow" data-reveal>Basket</p>
+    <h1 data-reveal data-reveal-delay="60">Your monthly medicines, priced together.</h1>
+    <p class="lede" data-reveal data-reveal-delay="120">Add the medicines you take regularly and see the total you’d save each refill by choosing the cheapest legal option.</p>
+
+    <div class="card card-pad adder" data-reveal>
+      <div class="adder-grid">
+        <select class="field" data-add-med>
+          {formulations.map((f) => <option value={f.id}>{f.label}</option>)}
+        </select>
+        <input class="field" type="number" min="1" value="30" data-add-qty aria-label="Quantity" />
+        <button class="btn btn-accent" data-add>Add <span class="arrow">+</span></button>
+      </div>
+    </div>
+
+    <ul class="ladder basket-lines" data-lines></ul>
+
+    <div class="basket-total card card-pad" data-total-wrap hidden>
+      <div>
+        <div class="mono muted">total per refill</div>
+        <div class="bt-pair"><span class="bt-you mono" data-you>₹0</span> <span class="muted">vs typical</span> <span class="bt-typ mono" data-typ>₹0</span></div>
+      </div>
+      <div class="bt-save"><div class="mono muted">you save</div><div class="bt-num serif" data-save>₹0</div></div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); min-height: 62vh; }
+  .lede { margin-block: 0.8em 2em; }
+  .adder-grid { display: grid; grid-template-columns: 1fr 0.5fr auto; gap: var(--sp-2); }
+  .basket-lines { margin: var(--sp-4) 0; }
+  .basket-total { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); border-color: color-mix(in oklab, var(--leaf) 35%, var(--border)); background: linear-gradient(100deg, var(--leaf-soft), var(--card)); }
+  .bt-pair { display: flex; align-items: baseline; gap: 0.6em; font-size: var(--step-1); margin-top: 0.2em; }
+  .bt-you { color: var(--leaf); font-weight: 700; }
+  .bt-typ { text-decoration: line-through; color: var(--ink-3); }
+  .bt-save { text-align: right; }
+  .bt-num { font-size: var(--step-3); color: var(--leaf); }
+  @media (max-width: 560px) { .adder-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { buildLadder } from '../lib/ladder';
+  import { inr, inr0, channelLabel } from '../lib/format';
+
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const med = root.querySelector<HTMLSelectElement>('[data-add-med]')!;
+    const qty = root.querySelector<HTMLInputElement>('[data-add-qty]')!;
+    const addBtn = root.querySelector<HTMLButtonElement>('[data-add]')!;
+    const linesEl = root.querySelector<HTMLElement>('[data-lines]')!;
+    const totalWrap = root.querySelector<HTMLElement>('[data-total-wrap]')!;
+    const youEl = root.querySelector<HTMLElement>('[data-you]')!;
+    const typEl = root.querySelector<HTMLElement>('[data-typ]')!;
+    const saveEl = root.querySelector<HTMLElement>('[data-save]')!;
+
+    let lines: { fid: number; qty: number }[] = [
+      { fid: 5001, qty: 30 }, { fid: 6100, qty: 30 },
+    ];
+
+    const render = () => {
+      if (!lines.length) { linesEl.innerHTML = `<li class="basket-empty muted">Your basket is empty. Add a medicine above.</li>`; totalWrap.hidden = true; return; }
+      let you = 0, typ = 0;
+      linesEl.innerHTML = lines.map((l, idx) => {
+        const v = buildLadder(l.fid, l.qty);
+        const best = v.rows[0]!;
+        const costliest = v.rows[v.rows.length - 1]!;
+        you += best.effectiveCost; typ += costliest.effectiveCost;
+        return `<li class="lrow">
+          <span class="lrank mono">${idx + 1}</span>
+          <div class="lmain">
+            <div class="lbrand">${v.formulationLabel}</div>
+            <div class="lsub muted mono">best: ${best.product.brand} (${channelLabel[best.product.channel]}) · qty ${l.qty}</div>
+          </div>
+          <div class="lcost"><span class="lcost-num mono">${inr(best.effectiveCost)}</span><span class="lcost-lbl muted mono">save ${inr0(costliest.effectiveCost - best.effectiveCost)}</span></div>
+          <div class="lcta"><button class="iconbtn" data-rm="${idx}" aria-label="Remove">×</button></div>
+        </li>`;
+      }).join('');
+      linesEl.querySelectorAll<HTMLElement>('[data-rm]').forEach((b) => b.addEventListener('click', () => { lines.splice(Number(b.dataset.rm), 1); render(); }));
+      totalWrap.hidden = false;
+      youEl.textContent = inr(you); typEl.textContent = inr(typ); saveEl.textContent = inr0(typ - you);
+    };
+
+    addBtn.addEventListener('click', () => { lines.push({ fid: Number(med.value), qty: Math.max(1, Number(qty.value) || 1) }); render(); });
+    render();
+  }
+  document.addEventListener('astro:page-load', () => document.querySelectorAll<HTMLElement>('[data-basket]').forEach(wire));
+</script>
+<style is:global>
+  .basket-empty { padding: 1.4em; text-align: center; border: 1px dashed var(--border); border-radius: var(--r-3); }
+  [data-rm].iconbtn { width: 2em; height: 2em; font-size: 1.1em; }
+</style>

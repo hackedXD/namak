@@ -1,0 +1,55 @@
+---
+import Layout from '../components/Layout.astro';
+import SearchBox from '../components/SearchBox.astro';
+import { searchAll } from '../lib/search';
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+const results = q ? searchAll(q, 20) : [];
+---
+<Layout title={q ? `“${q}” · Salt search` : 'Search · Salt'}>
+  <section class="wrap wrap-narrow page">
+    <div class="search-top" data-reveal><SearchBox big autofocus placeholder="Search a medicine, brand or molecule…" /></div>
+    {q && (
+      <p class="muted mono res-count" data-reveal>{results.length} result{results.length === 1 ? '' : 's'} for “{q}”</p>
+    )}
+    {q && results.length === 0 && (
+      <div class="nores card card-pad" data-reveal>
+        <h2 class="serif">No matches for “{q}”.</h2>
+        <p class="muted">Try a molecule name like <a href="/molecule/paracetamol" class="ulink">paracetamol</a> or <a href="/molecule/metformin" class="ulink">metformin</a>, or a brand like <a href="/medicine/dolo-650" class="ulink">Dolo 650</a>.</p>
+      </div>
+    )}
+    <ul class="res-list">
+      {results.map((h, i) => (
+        <li data-reveal data-reveal-delay={i * 30}>
+          <a href={h.href} class="res card">
+            <span class:list={['sb-badge', h.type]}>{h.type}</span>
+            <div class="res-text"><div class="res-title">{h.title}</div><div class="muted res-sub">{h.subtitle}</div></div>
+            <span class="res-arrow arrow">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    {!q && (
+      <div class="empty" data-reveal>
+        <p class="lede">Start typing above — try a brand you have at home.</p>
+      </div>
+    )}
+  </section>
+</Layout>
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); min-height: 60vh; }
+  .res-count { margin: 1.4em 0 1em; }
+  .res-list { list-style: none; padding: 0; display: grid; gap: 0.6em; }
+  .res { display: flex; align-items: center; gap: var(--sp-3); padding: 1em 1.2em; transition: transform 0.2s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease); }
+  .res:hover { transform: translateX(4px); box-shadow: var(--shadow-2); border-color: var(--line-2); }
+  .sb-badge { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3em 0.6em; border-radius: var(--r-full); flex-shrink: 0; }
+  .sb-badge.product { background: var(--saffron-soft); color: var(--saffron-2); }
+  .sb-badge.molecule { background: var(--teal-soft); color: var(--teal-ink); }
+  .sb-badge.formulation { background: var(--paper-3); color: var(--ink-2); }
+  .res-text { flex: 1; min-width: 0; }
+  .res-title { font-weight: 650; }
+  .res-sub { font-size: var(--step--1); }
+  .res-arrow { color: var(--teal); transition: transform 0.25s var(--ease); }
+  .res:hover .res-arrow { transform: translateX(4px); }
+  .nores { margin-top: var(--sp-3); }
+  .empty { margin-top: var(--sp-5); }
+</style>

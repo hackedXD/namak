@@ -1,0 +1,88 @@
+---
+import Layout from '../components/Layout.astro';
+const toc = [
+  ['neutrality', 'Why we’re neutral'],
+  ['channels', 'The four channels'],
+  ['ceiling', 'The legal maximum'],
+  ['safety', 'When two medicines are “the same”'],
+  ['freshness', 'Freshness & provenance'],
+  ['dispute', 'Disputing a price'],
+];
+---
+<Layout title="Methodology · Salt" description="How Salt sources prices, ranks options, decides interchangeability, and stays neutral.">
+  <section class="wrap page">
+    <div class="meth-head" data-reveal>
+      <p class="eyebrow">Methodology</p>
+      <h1>How Salt works — and why you can trust the numbers.</h1>
+      <p class="lede">Salt is a reference price index, like a Blue Book for medicines. We show the arithmetic on every screen. Here’s the whole method.</p>
+    </div>
+
+    <div class="meth-body">
+      <nav class="meth-toc" aria-label="Contents">
+        <div class="mono muted toc-h">On this page</div>
+        <ul>{toc.map(([id, label]) => <li><a href={`#${id}`} class="ulink">{label}</a></li>)}</ul>
+      </nav>
+
+      <article class="meth-prose">
+        <section id="neutrality" data-reveal>
+          <h2 class="serif">Why we’re neutral</h2>
+          <p>The moment a price comparison is owned by someone selling the drug, it stops being a comparison and becomes a storefront. Salt never stocks, sells, dispenses, or takes a referral fee. There is no “buy now” that completes a sale here. The consumer product exists to build the dataset and the trust; the index is the business — licensed to the people who <em>bear</em> medicine costs, never to those who set them.</p>
+          <p class="callout">A given medicine, quantity and pincode produces a byte-identical result for every visitor. No personalisation, ever — because a ranking you can’t reproduce is a ranking you can’t trust.</p>
+        </section>
+
+        <section id="channels" data-reveal>
+          <h2 class="serif">The four channels</h2>
+          <p>Every equivalent is placed in one of four channels, ranked by what you actually pay for the quantity you need:</p>
+          <div class="chan-grid">
+            <div class="chan"><span class="pill pill-teal">Jan Aushadhi</span><p>Government generic outlets (PMBJP). Usually the cheapest legal option.</p></div>
+            <div class="chan"><span class="pill pill-line">Generic</span><p>Unbranded generics from established manufacturers.</p></div>
+            <div class="chan"><span class="pill pill-line">Branded</span><p>Branded generics — same molecule, marketing markup.</p></div>
+            <div class="chan"><span class="pill pill-line">E-pharmacy</span><p>Online listings (labelled, and separable from the index).</p></div>
+          </div>
+          <p>We rank by <strong>effective cost</strong> — the packs you must actually buy — not the per-tablet price. A cheaper unit price inside a 100-pack is worse if you need ten.</p>
+        </section>
+
+        <section id="ceiling" data-reveal>
+          <h2 class="serif">The legal maximum</h2>
+          <p>Under the Drug Price Control Order, the NPPA fixes a ceiling price for 900+ scheduled formulations. It’s the one number no seller shows you. We put it above the fold, cite the exact notification, and flag any product priced above it. If you were charged more, that isn’t a markup — it’s illegal, and you can complain.</p>
+        </section>
+
+        <section id="safety" data-reveal>
+          <h2 class="serif">When two medicines are “the same”</h2>
+          <p>Interchangeability is a clinical judgement, not a name match. Two products are equivalent only if the molecule, the strength, the <strong>salt form</strong> and the <strong>release type</strong> all match — metoprolol succinate is not tartrate; a sustained-release tablet is not an immediate-release one. For narrow-therapeutic-index medicines (like levothyroxine or warfarin) we show prices but never nudge a switch: consistency matters more than a few rupees, so that’s a conversation for your doctor.</p>
+          <p class="callout">We’d rather fail to map a product than map it wrongly. A missing option is a gap; a wrong one is a hazard.</p>
+        </section>
+
+        <section id="freshness" data-reveal>
+          <h2 class="serif">Freshness & provenance</h2>
+          <p>Every raw source file is archived byte-for-byte before we parse it, so any number can be replayed and audited. Each price carries its source and snapshot date, one tap away. If a source goes stale we serve the last good data with a visible marker rather than an error — and publish the freshness of every source openly on the <a href="/sources" class="ulink">Sources</a> page.</p>
+        </section>
+
+        <section id="dispute" data-reveal>
+          <h2 class="serif">Disputing a price</h2>
+          <p>If you’re a manufacturer or pharmacy and a price looks wrong, we want to fix it — transparently. Corrections are applied as new, dated rows (we never quietly edit history), and the correction is visible on the product page. This is the single most credibility-preserving thing we do.</p>
+          <a href="/check-price" class="btn btn-accent">Check a price you were quoted <span class="arrow">→</span></a>
+        </section>
+      </article>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); }
+  .meth-head { max-width: 40ch; margin-bottom: var(--sp-6); }
+  .meth-head .lede { margin-top: 0.8em; max-width: 52ch; }
+  .meth-body { display: grid; grid-template-columns: 220px 1fr; gap: var(--sp-6); align-items: start; }
+  .meth-toc { position: sticky; top: 90px; }
+  .toc-h { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8em; }
+  .meth-toc ul { list-style: none; padding: 0; display: grid; gap: 0.6em; }
+  .meth-toc a { color: var(--ink-2); font-size: var(--step--1); font-weight: 500; }
+  .meth-prose section { margin-bottom: var(--sp-6); scroll-margin-top: 90px; }
+  .meth-prose h2 { margin-bottom: 0.5em; }
+  .meth-prose p { max-width: 62ch; margin-bottom: 0.9em; color: var(--ink-2); }
+  .callout { border-left: 3px solid var(--saffron); padding: 0.4em 0 0.4em 1.1em; font-family: var(--font-display); font-size: var(--step-1); color: var(--ink) !important; font-style: italic; }
+  .chan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin: 1.2em 0; }
+  .chan { padding: 1em; border: 1px solid var(--border); border-radius: var(--r-2); background: var(--paper-2); }
+  .chan p { font-size: var(--step--1); margin: 0.6em 0 0; }
+  @media (max-width: 820px) { .meth-body { grid-template-columns: 1fr; } .meth-toc { position: static; } .chan-grid { grid-template-columns: 1fr; } }
+</style>

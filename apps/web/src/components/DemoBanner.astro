@@ -1,0 +1,16 @@
+<div class="demo-banner">
+  <div class="wrap demo-inner">
+    <span class="dot" aria-hidden="true"></span>
+    <span><strong>Demo data.</strong> Prices and brands here are illustrative, for previewing the interface — not live figures. The ranking, ceiling and overcharge maths are real.</span>
+  </div>
+</div>
+<style>
+  .demo-banner {
+    background: var(--ink); color: var(--paper);
+    font-size: var(--step--1); font-family: var(--font-mono); letter-spacing: 0.01em;
+  }
+  .demo-inner { display: flex; align-items: center; gap: 0.6em; padding-block: 0.5em; }
+  .demo-banner .dot { color: var(--saffron); animation: floaty 2.4s ease-in-out infinite; }
+  .demo-banner strong { color: var(--saffron); font-weight: 600; }
+  @media (max-width: 620px) { .demo-inner { font-size: 0.72rem; } }
+</style>

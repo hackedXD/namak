@@ -1,0 +1,61 @@
+---
+import Layout from '../components/Layout.astro';
+import { demoPincodes } from '../lib/kendra';
+---
+<Layout title="Find a Jan Aushadhi kendra · Salt" description="Enter your pincode to find the nearest Jan Aushadhi (PMBJP) outlets — where generic medicines cost a fraction of branded ones.">
+  <section class="wrap wrap-narrow page" data-kfinder>
+    <p class="eyebrow" data-reveal>Jan Aushadhi near you</p>
+    <h1 data-reveal data-reveal-delay="60">Find your nearest Jan Aushadhi kendra.</h1>
+    <p class="lede" data-reveal data-reveal-delay="120">Government-run outlets selling quality generics at 50–90% below branded prices. Enter a pincode to find the closest ones.</p>
+
+    <div class="card card-pad kf-card" data-reveal>
+      <div class="kf-row">
+        <input class="field" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit pincode" value="560034" data-pin />
+        <button class="btn btn-accent" data-find>Find kendras <span class="arrow">→</span></button>
+      </div>
+      <div class="kf-demo mono muted">Demo pincodes: {demoPincodes.map((p) => <button class="kf-chip" data-fill={p}>{p}</button>)}</div>
+    </div>
+
+    <p class="muted stock-note" data-reveal>ⓘ Availability is not verified — call ahead before travelling. Salt never claims live stock.</p>
+    <div class="kendras grid" data-out></div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); min-height: 62vh; }
+  .lede { margin-block: 0.8em 2em; }
+  .kf-row { display: flex; gap: var(--sp-2); }
+  .kf-row .field { flex: 1; }
+  .kf-demo { margin-top: 1em; display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; font-size: var(--step--1); }
+  .kf-chip { border: 1px solid var(--border); background: var(--paper-2); border-radius: var(--r-full); padding: 0.2em 0.6em; cursor: pointer; font-family: var(--font-mono); font-size: 0.75rem; }
+  .kf-chip:hover { border-color: var(--teal); color: var(--teal); }
+  .stock-note { font-size: var(--step--1); margin: var(--sp-3) 0 var(--sp-3); }
+  .kendras { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 620px) { .kendras { grid-template-columns: 1fr; } .kf-row { flex-direction: column; } }
+</style>
+
+<script>
+  import { findNearbyKendras } from '../lib/kendra';
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const pin = root.querySelector<HTMLInputElement>('[data-pin]')!;
+    const find = root.querySelector<HTMLButtonElement>('[data-find]')!;
+    const out = root.querySelector<HTMLElement>('[data-out]')!;
+    const run = () => {
+      const v = pin.value.trim();
+      if (!/^\d{6}$/.test(v)) { out.innerHTML = `<p class="muted">Enter a valid 6-digit pincode.</p>`; return; }
+      const { centroidKnown, results } = findNearbyKendras(v, 6);
+      if (!centroidKnown) { out.innerHTML = `<p class="muted">No demo coordinates for ${v}. Try a demo pincode above.</p>`; return; }
+      out.innerHTML = results.map((k, i) => `<article class="kcard card card-pad" style="animation:pop-in .3s var(--ease-out) ${i * 40}ms both">
+        <div class="between"><strong>${k.name.replace('Jan Aushadhi Kendra — ', '')}</strong><span class="pill pill-teal mono">${k.distanceKm} km</span></div>
+        <div class="muted" style="font-size:var(--step--1);margin:.4em 0">${k.address}</div>
+        <div class="between"><span class="mono muted" style="font-size:.72rem">${k.pincode} · ${k.district}</span><span class="pill pill-line mono" style="font-size:.62rem">stock unverified</span></div>
+      </article>`).join('');
+    };
+    find.addEventListener('click', run);
+    pin.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+    root.querySelectorAll<HTMLElement>('[data-fill]').forEach((c) => c.addEventListener('click', () => { pin.value = c.dataset.fill!; run(); }));
+    run();
+  }
+  document.addEventListener('astro:page-load', () => document.querySelectorAll<HTMLElement>('[data-kfinder]').forEach(wire));
+</script>

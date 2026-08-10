@@ -1,0 +1,40 @@
+---
+import { sources } from '../lib/mock';
+import { prettyDate } from '../lib/format';
+interface Props { sourceIds: string[]; asOf: string }
+const { sourceIds, asOf } = Astro.props;
+const used = sources.filter((s) => sourceIds.includes(s.id));
+---
+<details class="prov" data-reveal>
+  <summary>
+    <span>Where these numbers come from</span>
+    <svg class="prov-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"></path></svg>
+  </summary>
+  <div class="prov-body">
+    <p class="muted mono prov-asof">Prices as of {prettyDate(asOf)}. Every number is traceable to a dated government source.</p>
+    <ul class="prov-list">
+      {used.map((s) => (
+        <li>
+          <span class:list={['pill', s.tier === 1 ? 'pill-teal' : 'pill-line']}>Tier {s.tier}</span>
+          <div>
+            <strong>{s.name}</strong>
+            <span class="muted"> · {s.license} · updated {s.lastUpdated === '—' ? 'pending' : prettyDate(s.lastUpdated)}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <a href="/sources" class="ulink mono prov-all">See all sources & freshness →</a>
+  </div>
+</details>
+<style>
+  .prov { margin-top: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-3); background: var(--paper-2); overflow: hidden; }
+  .prov summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 1em 1.2em; font-weight: 600; list-style: none; }
+  .prov summary::-webkit-details-marker { display: none; }
+  .prov-chev { transition: transform 0.3s var(--ease); color: var(--ink-3); }
+  .prov[open] .prov-chev { transform: rotate(180deg); }
+  .prov-body { padding: 0 1.2em 1.2em; }
+  .prov-asof { font-size: var(--step--1); margin-bottom: 1em; }
+  .prov-list { list-style: none; padding: 0; display: grid; gap: 0.7em; }
+  .prov-list li { display: flex; gap: 0.7em; align-items: center; font-size: var(--step--1); }
+  .prov-all { display: inline-block; margin-top: 1em; font-size: var(--step--1); }
+</style>

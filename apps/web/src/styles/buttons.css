@@ -1,0 +1,68 @@
+/* Custom button system — tactile, editorial, with a sliding arrow and a light
+   sheen sweep. Squared rather than pill, to feel considered rather than default. */
+
+.btn {
+  --btn-bg: var(--teal);
+  --btn-fg: #fff;
+  --btn-bd: transparent;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 0.55em;
+  padding: 0.72em 1.15em;
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--step-0);
+  line-height: 1; letter-spacing: -0.01em;
+  color: var(--btn-fg); background: var(--btn-bg);
+  border: 1.5px solid var(--btn-bd); border-radius: var(--r-2);
+  cursor: pointer; overflow: hidden; isolation: isolate;
+  box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255,255,255,0.18);
+  transition: transform 0.18s var(--ease), box-shadow 0.25s var(--ease),
+              background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.btn::after { /* sheen */
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  width: 40%; transform: translateX(-150%) skewX(-18deg); opacity: 0;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255,255,255,0.22); }
+.btn:hover::after { animation: sheen 0.9s var(--ease); opacity: 1; }
+.btn:active { transform: translateY(0) scale(0.99); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn .arrow { transition: transform 0.28s var(--ease); }
+.btn:hover .arrow { transform: translateX(4px); }
+
+.btn-accent  { --btn-bg: var(--saffron); }
+.btn-ink     { --btn-bg: var(--ink); --btn-fg: var(--paper); }
+.btn-outline { --btn-bg: transparent; --btn-fg: var(--ink); --btn-bd: var(--line-2); box-shadow: none; }
+.btn-outline:hover { --btn-bd: var(--teal); background: color-mix(in oklab, var(--teal) 6%, transparent); }
+.btn-ghost   { --btn-bg: transparent; --btn-fg: var(--ink); box-shadow: none; }
+.btn-ghost:hover { background: color-mix(in oklab, var(--ink) 6%, transparent); transform: none; box-shadow: none; }
+.btn-sm { padding: 0.5em 0.85em; font-size: var(--step--1); }
+.btn-lg { padding: 0.9em 1.5em; font-size: var(--step-1); }
+.btn-block { width: 100%; justify-content: center; }
+
+/* segmented control (for quantity presets, channel filters) */
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--paper-2); border: 1px solid var(--border); border-radius: var(--r-2); }
+.seg button {
+  border: none; background: transparent; color: var(--ink-2); cursor: pointer;
+  padding: 0.4em 0.8em; border-radius: calc(var(--r-2) - 3px); font-weight: 550; font-size: var(--step--1);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease); font-variant-numeric: tabular-nums;
+}
+.seg button[aria-pressed='true'] { background: var(--card); color: var(--ink); box-shadow: var(--shadow-1); }
+
+/* text input */
+.field {
+  width: 100%; padding: 0.8em 1em; background: var(--card);
+  border: 1.5px solid var(--line-2); border-radius: var(--r-2); color: var(--ink);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  font-variant-numeric: tabular-nums;
+}
+.field::placeholder { color: var(--ink-3); }
+.field:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px var(--ring); }
+
+/* icon button */
+.iconbtn {
+  display: inline-grid; place-items: center; width: 2.4em; height: 2.4em;
+  border-radius: var(--r-2); border: 1px solid var(--border); background: var(--card);
+  color: var(--ink-2); cursor: pointer; transition: all 0.2s var(--ease);
+}
+.iconbtn:hover { color: var(--ink); border-color: var(--line-2); transform: translateY(-1px); }

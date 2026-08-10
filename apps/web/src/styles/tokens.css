@@ -1,0 +1,101 @@
+/* ============================================================================
+   Salt — design tokens. A warm, editorial system (think public-interest data
+   journalism), deliberately not the default indigo-gradient "AI" look.
+   Palette: warm cream paper · ink · pine-teal (trust) · saffron (aushadhi
+   energy) · leaf (savings) · clay (overcharge) · gold (the legal maximum).
+   ========================================================================== */
+
+:root {
+  /* — surfaces (warm cream paper) — */
+  --paper:      #FBF7EF;
+  --paper-2:    #F4ECDE;
+  --paper-3:    #ECE1CE;
+  --card:       #FFFDF8;
+
+  /* — ink — */
+  --ink:        #221D16;
+  --ink-2:      #4C4438;
+  --ink-3:      #756A59;
+  --line:       #E4D9C6;
+  --line-2:     #D6C8AF;
+
+  /* — brand — */
+  --teal:       #0C5049;   /* primary: trust / health */
+  --teal-ink:   #093B36;
+  --teal-soft:  #D7E7E1;
+  --saffron:    #D0620E;   /* accent: energy, jan aushadhi */
+  --saffron-2:  #B5540A;
+  --saffron-soft:#F6E3CE;
+  --leaf:       #2C7A4B;   /* savings */
+  --leaf-soft:  #DBEBDD;
+  --clay:       #B0392C;   /* overcharge / alert */
+  --clay-soft:  #F3DAD3;
+  --gold:       #A9812A;   /* the legal maximum */
+  --gold-soft:  #F1E6C7;
+
+  /* — semantic — */
+  --bg:          var(--paper);
+  --fg:          var(--ink);
+  --muted:       var(--ink-3);
+  --accent:      var(--saffron);
+  --primary:     var(--teal);
+  --border:      var(--line);
+  --ring:        color-mix(in oklab, var(--teal) 45%, transparent);
+
+  /* — type — */
+  --font-display: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Hanken Grotesk Variable', 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --step--1: clamp(0.82rem, 0.79rem + 0.16vw, 0.9rem);
+  --step-0:  clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  --step-1:  clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+  --step-2:  clamp(1.45rem, 1.28rem + 0.85vw, 1.95rem);
+  --step-3:  clamp(1.8rem, 1.5rem + 1.5vw, 2.7rem);
+  --step-4:  clamp(2.3rem, 1.8rem + 2.6vw, 3.9rem);
+  --step-5:  clamp(2.9rem, 2.1rem + 4vw, 5.4rem);
+
+  /* — space / radius / shadow — */
+  --sp-1: 0.35rem; --sp-2: 0.6rem; --sp-3: 1rem; --sp-4: 1.5rem;
+  --sp-5: 2.25rem; --sp-6: 3.5rem; --sp-7: 5.5rem;
+  --r-1: 5px; --r-2: 9px; --r-3: 14px; --r-4: 22px; --r-full: 999px;
+  --shadow-1: 0 1px 2px rgba(34,29,22,0.05), 0 2px 8px rgba(34,29,22,0.04);
+  --shadow-2: 0 4px 14px rgba(34,29,22,0.08), 0 12px 34px rgba(34,29,22,0.07);
+  --shadow-3: 0 10px 30px rgba(34,29,22,0.12), 0 30px 70px rgba(34,29,22,0.10);
+
+  --maxw: 1160px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark theme: system default, plus explicit [data-theme] override. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #15120D; --paper-2: #1E1A13; --paper-3: #292217; --card: #1B1710;
+    --ink: #F3EADA; --ink-2: #C7BBA6; --ink-3: #94886F;
+    --line: #322A1E; --line-2: #40372A;
+    --teal: #46B39C; --teal-ink: #A7E0D2; --teal-soft: #123833;
+    --saffron: #F0862F; --saffron-2: #E0731D; --saffron-soft: #3A2412;
+    --leaf: #5BB97C; --leaf-soft: #14331F;
+    --clay: #E27567; --clay-soft: #3A1712;
+    --gold: #D8B45E; --gold-soft: #362B10;
+    --ring: color-mix(in oklab, #46B39C 55%, transparent);
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.25);
+    --shadow-2: 0 4px 14px rgba(0,0,0,0.4), 0 12px 34px rgba(0,0,0,0.3);
+    --shadow-3: 0 10px 30px rgba(0,0,0,0.5), 0 30px 70px rgba(0,0,0,0.4);
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #15120D; --paper-2: #1E1A13; --paper-3: #292217; --card: #1B1710;
+  --ink: #F3EADA; --ink-2: #C7BBA6; --ink-3: #94886F;
+  --line: #322A1E; --line-2: #40372A;
+  --teal: #46B39C; --teal-ink: #A7E0D2; --teal-soft: #123833;
+  --saffron: #F0862F; --saffron-2: #E0731D; --saffron-soft: #3A2412;
+  --leaf: #5BB97C; --leaf-soft: #14331F;
+  --clay: #E27567; --clay-soft: #3A1712;
+  --gold: #D8B45E; --gold-soft: #362B10;
+  --ring: color-mix(in oklab, #46B39C 55%, transparent);
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-2: 0 4px 14px rgba(0,0,0,0.4), 0 12px 34px rgba(0,0,0,0.3);
+  --shadow-3: 0 10px 30px rgba(0,0,0,0.5), 0 30px 70px rgba(0,0,0,0.4);
+}

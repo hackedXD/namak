@@ -1,0 +1,213 @@
+---
+import Layout from '../components/Layout.astro';
+import SearchBox from '../components/SearchBox.astro';
+import { buildLadder } from '../lib/ladder';
+import { inr, inr0, channelLabel } from '../lib/format';
+
+const featured = buildLadder(4412, 30); // Paracetamol 650, 30 tablets
+const top = featured.rows[0]!;
+const costliest = featured.rows[featured.rows.length - 1]!;
+const popular = [
+  ['Dolo 650', '/medicine/dolo-650'],
+  ['Telma 40', '/medicine/telma-40'],
+  ['Glycomet 500', '/medicine/glycomet-500'],
+  ['Pan 40', '/medicine/pan-40'],
+  ['Thyronorm 50', '/medicine/thyronorm-50'],
+];
+const steps = [
+  { n: '01', t: 'Search any medicine', d: 'Type a brand like “Dolo 650”, a molecule, or scan a prescription. We resolve it to its exact formulation — salt form and release type included.' },
+  { n: '02', t: 'See every equivalent, ranked', d: 'Jan Aushadhi, unbranded generics, branded, and the legal maximum — ranked by what you actually pay for the quantity you need.' },
+  { n: '03', t: 'Act with confidence', d: 'Find the nearest Jan Aushadhi kendra, check if you were overcharged, and see exactly where each number comes from.' },
+];
+---
+<Layout>
+  <!-- HERO -->
+  <section class="hero paper-tex">
+    <div class="wrap hero-inner">
+      <p class="eyebrow" data-reveal>India’s neutral medicine price index</p>
+      <h1 class="display hero-title" data-reveal data-reveal-delay="60">
+        The same medicine,<br /><span class="hl">often 8–35× cheaper.</span>
+      </h1>
+      <p class="lede hero-lede" data-reveal data-reveal-delay="130">
+        Search a brand and see every therapeutically-equivalent option ranked by price —
+        including the government’s Jan Aushadhi price and the maximum the law allows.
+        We never sell. Neutrality is the whole point.
+      </p>
+      <div class="hero-search" data-reveal data-reveal-delay="200">
+        <SearchBox big autofocus />
+      </div>
+      <div class="popular cluster" data-reveal data-reveal-delay="260">
+        <span class="muted mono pop-label">Popular</span>
+        {popular.map(([label, href]) => <a href={href} class="chip">{label}</a>)}
+      </div>
+      <ul class="trust cluster" data-reveal data-reveal-delay="320">
+        <li><span class="dot" style="color:var(--leaf)"></span> Government-sourced</li>
+        <li><span class="dot" style="color:var(--gold)"></span> Shows the legal maximum</li>
+        <li><span class="dot" style="color:var(--teal)"></span> Never sponsored</li>
+      </ul>
+    </div>
+
+    <!-- floating featured card -->
+    <div class="wrap">
+      <aside class="feature card" data-reveal data-reveal-delay="200" aria-label="Example price comparison">
+        <div class="feature-head between">
+          <div>
+            <div class="mono muted feature-eyebrow">Example · 30 tablets</div>
+            <div class="feature-name serif">Paracetamol 650 mg</div>
+          </div>
+          <span class="pill pill-gold" title="Statutory ceiling">⚖ legal max {inr(featured.legalMaxPerUnit!)}/tab</span>
+        </div>
+        <div class="feature-ladder">
+          {featured.rows.slice(0, 4).map((r, i) => (
+            <div class:list={['frow', { best: i === 0 }]}>
+              <span class="frank mono">{i + 1}</span>
+              <span class="fbrand">
+                {r.product.brand}
+                <span class={'pill pill-line fch'}>{channelLabel[r.product.channel]}</span>
+              </span>
+              <span class="fcost mono">{inr(r.effectiveCost)}</span>
+              {i === 0
+                ? <span class="pill pill-leaf">save {inr0(top.savingVsCostliest)}</span>
+                : <span class="muted mono fsave">{r.savingVsCostliest > 0 ? '−' + inr0(r.savingVsCostliest) : '—'}</span>}
+            </div>
+          ))}
+        </div>
+        <div class="feature-foot">
+          <span>Buying <strong>{costliest.product.brand}</strong> instead of Jan Aushadhi costs</span>
+          <span class="feature-delta mono" data-count={top.savingVsCostliest} data-count-prefix="₹" data-count-decimals="0">₹0</span>
+          <span>more — a <strong>{featured.topSavingPct}%</strong> difference.</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- LEGAL MAX -->
+  <section class="section">
+    <div class="wrap grid two">
+      <div data-reveal>
+        <p class="eyebrow">The number no competitor shows</p>
+        <h2>Every drug has a legal ceiling. We put it above the fold.</h2>
+        <p class="lede">Under the Drug Price Control Order, the NPPA fixes a maximum price for 900+ scheduled formulations. Most people have never seen it. If a pharmacy charged you more, that’s not a markup — it’s illegal.</p>
+        <a href="/check-price" class="btn btn-accent">Check if you were overcharged <span class="arrow">→</span></a>
+      </div>
+      <div class="maxcard card card-pad" data-reveal data-reveal-delay="120">
+        <div class="mono muted">NPPA notification {featured.ceilingCitation}</div>
+        <div class="maxnum serif">{inr(featured.legalMaxPerUnit!)}<span class="maxunit">per tablet</span></div>
+        <div class="maxbar">
+          <div class="maxbar-fill" style={`width:${Math.min(100, (top.unitPrice / featured.legalMaxPerUnit!) * 100)}%`}></div>
+          <div class="maxbar-ceil" title="Legal maximum"></div>
+        </div>
+        <div class="between mono maxlabels">
+          <span>Jan Aushadhi {inr(top.unitPrice)}</span>
+          <span class="muted">ceiling {inr(featured.legalMaxPerUnit!)}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section howsec">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>How it works</p>
+      <h2 data-reveal data-reveal-delay="60">Three steps, no account, no wall.</h2>
+      <div class="steps grid">
+        {steps.map((s, i) => (
+          <article class="step card card-pad" data-reveal data-reveal-delay={80 + i * 90}>
+            <div class="step-n mono">{s.n}</div>
+            <h3 class="step-t">{s.t}</h3>
+            <p class="muted">{s.d}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="section statsec">
+    <div class="wrap stats grid">
+      {[
+        { v: 6000, p: '', s: '', label: 'formulations in scope', dec: 0 },
+        { v: 19238, p: '', s: '', label: 'pincodes geocoded', dec: 0 },
+        { v: 87, p: '', s: '%', label: 'max saving in this demo', dec: 0 },
+        { v: 0, p: '₹', s: '', label: 'cost to you — always', dec: 0 },
+      ].map((st, i) => (
+        <div class="stat" data-reveal data-reveal-delay={i * 80}>
+          <div class="stat-v serif" data-count={st.v} data-count-prefix={st.p} data-count-suffix={st.s} data-count-decimals={st.dec}>{st.p}0{st.s}</div>
+          <div class="stat-l muted mono">{st.label}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="wrap">
+      <div class="cta card card-pad paper-tex" data-reveal>
+        <h2 class="cta-title">Find the cheapest legal price for your medicine.</h2>
+        <p class="lede">Start with a brand you have at home.</p>
+        <div class="cta-search"><SearchBox big /></div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero { padding-top: clamp(2.5rem, 6vw, 5rem); padding-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .hero-inner { max-width: 880px; }
+  .hero-title { margin-top: 0.3em; }
+  .hl { color: var(--teal); font-style: italic; }
+  .hero-lede { margin-top: 0.9em; max-width: 54ch; }
+  .hero-search { margin-top: 1.8em; max-width: 620px; }
+  .popular { margin-top: 1.1em; gap: 0.5em; }
+  .pop-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 0.2em; }
+  .chip {
+    padding: 0.42em 0.85em; border-radius: var(--r-full); border: 1px solid var(--border);
+    background: var(--card); font-size: var(--step--1); font-weight: 550;
+    transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .chip:hover { transform: translateY(-2px); border-color: var(--teal); color: var(--teal); }
+  .trust { margin-top: 1.5em; gap: 1.4em; list-style: none; padding: 0; font-size: var(--step--1); color: var(--ink-2); }
+  .trust li { display: flex; align-items: center; gap: 0.5em; }
+
+  .feature { margin-top: 2.5rem; padding: clamp(1.1rem, 2.6vw, 1.6rem); max-width: 620px; }
+  .feature-eyebrow { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .feature-name { font-size: var(--step-1); margin-top: 0.15em; }
+  .feature-ladder { margin-top: 1em; display: grid; gap: 0.35em; }
+  .frow { display: grid; grid-template-columns: 1.2em 1fr auto auto; align-items: center; gap: 0.7em; padding: 0.55em 0.7em; border-radius: var(--r-2); border: 1px solid transparent; }
+  .frow.best { background: var(--leaf-soft); border-color: color-mix(in oklab, var(--leaf) 25%, transparent); }
+  .frank { color: var(--ink-3); font-size: 0.8em; }
+  .fbrand { display: flex; align-items: center; gap: 0.5em; font-weight: 600; min-width: 0; }
+  .fch { font-size: 0.62rem; }
+  .fcost { font-weight: 600; }
+  .fsave { font-size: var(--step--1); }
+  .feature-foot { margin-top: 1em; padding-top: 0.9em; border-top: 1px solid var(--border); font-size: var(--step--1); color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 0.4em; align-items: baseline; }
+  .feature-delta { color: var(--clay); font-size: var(--step-1); font-weight: 700; }
+
+  .grid.two { grid-template-columns: 1.05fr 0.95fr; align-items: center; gap: var(--sp-6); }
+  .maxcard { border-color: color-mix(in oklab, var(--gold) 40%, var(--border)); background: linear-gradient(180deg, var(--gold-soft), var(--card)); }
+  .maxnum { font-size: var(--step-4); color: var(--gold); display: flex; align-items: baseline; gap: 0.3em; }
+  .maxunit { font-size: var(--step-0); color: var(--ink-2); font-family: var(--font-sans); }
+  .maxbar { position: relative; height: 12px; background: var(--paper-3); border-radius: var(--r-full); margin: 1.2em 0 0.7em; overflow: hidden; }
+  .maxbar-fill { position: absolute; inset: 0 auto 0 0; background: var(--leaf); border-radius: var(--r-full); transform-origin: left; animation: grow-bar 1s var(--ease) both; }
+  .maxbar-ceil { position: absolute; right: 0; top: -3px; bottom: -3px; width: 3px; background: var(--gold); border-radius: 2px; }
+  .maxlabels { font-size: var(--step--1); }
+
+  .howsec { background: var(--paper-2); border-block: 1px solid var(--border); }
+  .steps { grid-template-columns: repeat(3, 1fr); margin-top: 2em; }
+  .step-n { color: var(--saffron); font-size: 1.1rem; font-weight: 600; }
+  .step-t { font-size: var(--step-1); margin: 0.5em 0 0.4em; }
+
+  .stats { grid-template-columns: repeat(4, 1fr); text-align: center; }
+  .stat-v { font-size: var(--step-4); color: var(--teal); }
+  .stat-l { font-size: var(--step--1); margin-top: 0.3em; }
+
+  .cta { text-align: center; padding-block: clamp(2.2rem, 5vw, 3.5rem); }
+  .cta-title { max-width: 20ch; margin-inline: auto; }
+  .cta-search { max-width: 560px; margin: 1.5em auto 0; }
+
+  @media (max-width: 820px) {
+    .grid.two { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); gap: var(--sp-5); }
+  }
+</style>
