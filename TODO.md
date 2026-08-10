@@ -61,6 +61,12 @@ Last updated: 2026-08-10.
 
 - [ ] **Cloudflare account** — Pages, Workers, D1, KV, R2 (all free tier). Needed
       to deploy the API + site and to move the raw store from local disk to R2.
+      - **To turn on the site auto-deploy** (the `.github/workflows/web-pages.yml`
+        Action already builds the UI on every change): run
+        `wrangler pages project create salt-web`, then add repo secrets
+        `CLOUDFLARE_API_TOKEN` (scope: Cloudflare Pages · Edit) and
+        `CLOUDFLARE_ACCOUNT_ID`. The deploy step activates automatically once both
+        exist; until then the Action still builds + uploads the site as an artifact.
 - [ ] **GitHub Actions secrets** — for the ingestion cron (02:00 IST) and Cloudflare
       deploy. No secrets needed yet (everything runs locally so far).
 - [ ] **Domain** (~₹1,000/yr) — the only committed cost in v0 (Part 13.1).

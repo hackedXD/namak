@@ -1,0 +1,85 @@
+# Build the Astro site whenever the UI changes, and deploy it to Cloudflare Pages
+# (design §8). The BUILD runs on every UI change and uploads the built site as a
+# downloadable artifact — that part works immediately, no accounts needed.
+#
+# To turn on auto-DEPLOY to Cloudflare Pages (see TODO.md → Cloudflare account):
+#   1. Create the Pages project once:  wrangler pages project create salt-web
+#   2. Add two repo secrets (Settings → Secrets and variables → Actions):
+#        CLOUDFLARE_API_TOKEN   — a token with the "Cloudflare Pages: Edit" permission
+#        CLOUDFLARE_ACCOUNT_ID  — your Cloudflare account id
+#   The deploy step activates automatically once both secrets are present.
+
+name: Web · build & deploy (Cloudflare Pages)
+
+on:
+  push:
+    branches: [claude/salt-medicine-price-index-x6cjxu, main]
+    paths:
+      - 'apps/web/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/web-pages.yml'
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/web-pages.yml'
+  workflow_dispatch: {}
+
+# Don't stack redundant runs for the same ref — cancel the in-flight one.
+concurrency:
+  group: web-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4 # version comes from the root package.json "packageManager"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the site
+        run: pnpm --filter @salt/web build
+
+      - name: Upload built site (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Deploy to Cloudflare Pages
+        if: ${{ github.event_name != 'pull_request' && env.CF_API_TOKEN != '' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy apps/web/dist
+            --project-name=salt-web
+            --branch=${{ github.ref_name }}
+            --commit-dirty=true
+
+      - name: Deploy skipped (no Cloudflare secrets yet)
+        if: ${{ github.event_name != 'pull_request' && env.CF_API_TOKEN == '' }}
+        run: |
+          echo "::notice title=Cloudflare deploy skipped::Site built OK and uploaded as the 'web-dist' artifact. Add CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID secrets and create a Pages project named 'salt-web' to enable auto-deploy."
