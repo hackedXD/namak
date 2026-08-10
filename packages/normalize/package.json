@@ -1,0 +1,20 @@
+{
+  "name": "@salt/normalize",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "§4.1 composition normalisation engine. Pure TypeScript, zero I/O.",
+  "main": "src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo noop && exit 0"
+  },
+  "dependencies": { "@salt/domain": "workspace:*" },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "fast-check": "^3.23.1"
+  }
+}
