@@ -2,8 +2,7 @@
 import SearchBox from './SearchBox.astro';
 const path = Astro.url.pathname;
 const nav = [
-  { href: '/check-price', label: 'Overcharge check' },
-  { href: '/scan', label: 'Scan' },
+  { href: '/kendra', label: 'Find a kendra' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/sources', label: 'Sources' },
 ];
@@ -21,6 +20,10 @@ const nav = [
       {nav.map((n) => (
         <a href={n.href} class:list={['navlink', 'ulink', { active: path.startsWith(n.href) }]}>{n.label}</a>
       ))}
+      <a href="/scan" class:list={['btn', 'btn-accent', 'btn-sm', 'scan-nav', { active: path.startsWith('/scan') }]}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 12h10"></path></svg>
+        Scan
+      </a>
       <button class="iconbtn theme-toggle" aria-label="Toggle colour theme" data-theme-toggle>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
       </button>

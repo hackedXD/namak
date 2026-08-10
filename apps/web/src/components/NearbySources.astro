@@ -1,0 +1,74 @@
+---
+// Clickable list of nearby cheaper sources (Jan Aushadhi kendras) for a pincode.
+// Server-renders an initial list; the client updates it as the pincode changes.
+import { findNearbyKendras, demoPincodes } from '../lib/kendra';
+interface Props { pincode?: string; limit?: number; heading?: string; compact?: boolean }
+const { pincode = '560034', limit = 4, heading = 'Nearby cheaper sources', compact = false } = Astro.props;
+const initial = findNearbyKendras(pincode, limit);
+---
+<div class:list={['nearby', { compact }]} data-nearby data-limit={limit}>
+  <div class="between nearby-head">
+    <h3 class="serif nearby-h">{heading}</h3>
+    <div class="nearby-pin">
+      <input class="field nearby-input" inputmode="numeric" maxlength="6" value={pincode} placeholder="Pincode" data-pin aria-label="Pincode" />
+    </div>
+  </div>
+  <p class="muted mono nearby-note">ⓘ Jan Aushadhi kendras — generics at 50–90% below branded. Stock unverified; call ahead.</p>
+  <div class="nearby-list" data-list>
+    {initial.results.map((k) => (
+      <a class="nsrc" href={`/kendra/${k.code}`}>
+        <span class="nsrc-dist pill pill-teal mono">{k.distanceKm} km</span>
+        <span class="nsrc-body">
+          <span class="nsrc-name">{k.name.replace('Jan Aushadhi Kendra — ', '')}</span>
+          <span class="muted nsrc-addr">{k.address}, {k.pincode}</span>
+        </span>
+        <span class="nsrc-arrow arrow">→</span>
+      </a>
+    ))}
+  </div>
+  <div class="nearby-demo mono muted">Try: {demoPincodes.slice(0, 4).map((p) => <button class="nearby-chip" data-fill={p}>{p}</button>)}</div>
+</div>
+
+<style>
+  .nearby { border: 1px solid var(--border); border-radius: var(--r-3); background: var(--paper-2); padding: clamp(1rem, 2.5vw, 1.5rem); }
+  .nearby-head { margin-bottom: 0.4em; gap: var(--sp-2); }
+  .nearby-h { font-size: var(--step-1); }
+  .nearby-input { width: 8em; padding-block: 0.5em; text-align: center; }
+  .nearby-note { font-size: 0.72rem; margin-bottom: 1em; }
+  .nearby-list { display: grid; gap: 0.5em; }
+  .nsrc { display: flex; align-items: center; gap: var(--sp-3); padding: 0.7em 0.9em; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-2);
+    transition: transform 0.18s var(--ease), box-shadow 0.22s var(--ease), border-color 0.22s var(--ease); }
+  .nsrc:hover { transform: translateX(3px); box-shadow: var(--shadow-1); border-color: var(--teal); }
+  .nsrc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .nsrc-name { font-weight: 650; }
+  .nsrc-addr { font-size: var(--step--1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nsrc-arrow { color: var(--teal); transition: transform 0.2s var(--ease); }
+  .nsrc:hover .nsrc-arrow { transform: translateX(3px); }
+  .nearby-demo { margin-top: 0.9em; display: flex; gap: 0.4em; align-items: center; flex-wrap: wrap; font-size: 0.72rem; }
+  .nearby-chip { border: 1px solid var(--border); background: var(--card); border-radius: var(--r-full); padding: 0.15em 0.55em; cursor: pointer; font-family: var(--font-mono); font-size: 0.72rem; }
+  .nearby-chip:hover { border-color: var(--teal); color: var(--teal); }
+</style>
+
+<script>
+  import { findNearbyKendras } from '../lib/kendra';
+  function esc(s: string) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string)); }
+  function wire(root: HTMLElement) {
+    if (root.dataset.wired) return; root.dataset.wired = '1';
+    const pin = root.querySelector<HTMLInputElement>('[data-pin]')!;
+    const list = root.querySelector<HTMLElement>('[data-list]')!;
+    const limit = Number(root.dataset.limit || 4);
+    const render = () => {
+      const v = pin.value.trim();
+      if (!/^\d{6}$/.test(v)) return;
+      const { centroidKnown, results } = findNearbyKendras(v, limit);
+      if (!centroidKnown) { list.innerHTML = `<p class="muted" style="font-size:var(--step--1)">No demo coordinates for ${esc(v)} — try a chip below.</p>`; return; }
+      list.innerHTML = results.map((k) => `<a class="nsrc" href="/kendra/${encodeURIComponent(k.code)}">
+        <span class="nsrc-dist pill pill-teal mono">${k.distanceKm} km</span>
+        <span class="nsrc-body"><span class="nsrc-name">${esc(k.name.replace('Jan Aushadhi Kendra — ', ''))}</span><span class="muted nsrc-addr">${esc(k.address)}, ${k.pincode}</span></span>
+        <span class="nsrc-arrow arrow">→</span></a>`).join('');
+    };
+    let t: number; pin.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(render, 200); });
+    root.querySelectorAll<HTMLElement>('[data-fill]').forEach((c) => c.addEventListener('click', () => { pin.value = c.dataset.fill!; render(); }));
+  }
+  document.addEventListener('astro:page-load', () => document.querySelectorAll<HTMLElement>('[data-nearby]').forEach(wire));
+</script>

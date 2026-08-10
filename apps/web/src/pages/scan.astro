@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+import NearbySources from '../components/NearbySources.astro';
 ---
 <Layout title="Scan a prescription · Salt" description="Photograph a prescription and see the cheaper equivalent for every line. Images are processed and discarded — never stored.">
   <section class="wrap wrap-narrow page" data-scan>
@@ -42,6 +43,7 @@ import Layout from '../components/Layout.astro';
         <button class="btn btn-outline btn-sm" data-restart>Scan another</button>
       </div>
       <ul class="ladder" data-results></ul>
+      <div class="scan-nearby"><NearbySources pincode="560034" limit={3} heading="Buy these generics near you" /></div>
       <p class="advice mono">ⓘ Confirm dosing with your doctor. We show price options only, never a switch recommendation for narrow-therapeutic-index medicines.</p>
     </div>
   </section>

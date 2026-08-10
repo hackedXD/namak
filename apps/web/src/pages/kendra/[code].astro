@@ -1,0 +1,73 @@
+---
+import Layout from '../../components/Layout.astro';
+import { kendras, products, formulationById } from '../../lib/mock';
+import { inr } from '../../lib/format';
+
+export function getStaticPaths() {
+  return kendras.map((k) => ({ params: { code: k.code } }));
+}
+const { code } = Astro.params;
+const k = kendras.find((x) => x.code === code)!;
+// Illustrative: generics commonly stocked at Jan Aushadhi outlets (demo).
+const stocked = products.filter((p) => p.channel === 'jan_aushadhi').slice(0, 6);
+const shortName = k.name.replace('Jan Aushadhi Kendra — ', '');
+const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(k.name + ', ' + k.pincode)}`;
+---
+<Layout title={`${shortName} — Jan Aushadhi kendra · Salt`} description={`${k.name}, ${k.address}, ${k.pincode}. Generic medicines at 50–90% below branded prices.`}>
+  <section class="wrap page">
+    <nav class="crumbs mono muted"><a href="/kendra" class="ulink">Kendras</a> › <span>{shortName}</span></nav>
+
+    <div class="kd-head" data-reveal>
+      <div>
+        <span class="pill pill-teal">Jan Aushadhi · government generic outlet</span>
+        <h1 class="kd-title">{shortName}</h1>
+        <p class="lede">{k.address}, {k.district}, {k.state} — {k.pincode}</p>
+        <div class="cluster kd-actions">
+          <a class="btn btn-accent" href={mapsUrl} target="_blank" rel="noopener">Get directions <span class="arrow">↗</span></a>
+          <a class="btn btn-outline" href="/kendra">Find another near you <span class="arrow">→</span></a>
+        </div>
+        <p class="pill pill-line kd-stock">ⓘ Stock is not verified — call ahead before travelling.</p>
+      </div>
+      <div class="kd-meta card card-pad">
+        <div class="mono muted">outlet code</div><div class="mono kd-code">{k.code}</div>
+        <div class="mono muted" style="margin-top:1em">why generics here</div>
+        <p class="muted kd-why">Jan Aushadhi outlets sell quality-assured generics at 50–90% below typical branded MRPs.</p>
+      </div>
+    </div>
+
+    <h2 class="serif kd-sec" data-reveal>Generics commonly stocked here</h2>
+    <div class="kd-stocklist grid">
+      {stocked.map((p, i) => {
+        const f = formulationById.get(p.formulationId)!;
+        return (
+          <a class="kd-item card card-pad" href={`/medicine/${p.slug}`} data-reveal data-reveal-delay={i * 40}>
+            <div class="between">
+              <strong>{f.label}</strong>
+              <span class="pill pill-leaf mono">{inr(p.mrp / p.packSize)}/{f.packUnit}</span>
+            </div>
+            <div class="muted mono kd-item-sub">Jan Aushadhi · {p.packSize}-{f.packUnit} pack · {inr(p.mrp)}</div>
+            <span class="kd-item-cta">See the price ladder <span class="arrow">→</span></span>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page { padding-block: var(--sp-5) var(--sp-6); }
+  .crumbs { font-size: var(--step--1); display: flex; gap: 0.5em; margin-bottom: 1.4em; }
+  .kd-head { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--sp-5); align-items: start; }
+  .kd-title { font-size: var(--step-4); margin: 0.4em 0 0.3em; }
+  .kd-actions { margin-top: 1.4em; }
+  .kd-stock { margin-top: 1.2em; font-size: var(--step--1); }
+  .kd-code { font-size: var(--step-1); }
+  .kd-why { font-size: var(--step--1); margin-top: 0.4em; }
+  .kd-sec { margin: var(--sp-6) 0 var(--sp-3); }
+  .kd-stocklist { grid-template-columns: repeat(3, 1fr); }
+  .kd-item { transition: transform 0.2s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease); }
+  .kd-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-color: var(--line-2); }
+  .kd-item-sub { font-size: var(--step--1); margin: 0.5em 0 0.8em; }
+  .kd-item-cta { color: var(--teal); font-weight: 600; font-size: var(--step--1); }
+  @media (max-width: 820px) { .kd-head { grid-template-columns: 1fr; } .kd-stocklist { grid-template-columns: 1fr; } }
+</style>
