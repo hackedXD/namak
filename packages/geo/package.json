@@ -1,0 +1,18 @@
+{
+  "name": "@salt/geo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure geo primitives: geohash encode + neighbours, haversine (design §4.5). Zero I/O.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo '@salt/geo: lint noop' && exit 0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "fast-check": "^3.23.1"
+  }
+}
