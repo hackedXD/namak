@@ -13,6 +13,14 @@ dist/
 .env.*
 .dev.vars
 
+# Python (ingestion plane)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# local dev DB + raw store (derived, rebuildable from R2)
+ingest/.local/
+
 # OS / editor
 .DS_Store
 *.log

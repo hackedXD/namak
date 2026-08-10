@@ -56,10 +56,29 @@ egress channel is settled. Recorded in the Decisions log below.
 ### Milestone 1–2 state
 
 - ✅ Monorepo skeleton (pnpm + Turborepo, TS strict).
-- ✅ `packages/schema` — §2.2 DDL as migration `0001_init.sql`, offline-validated.
-- ⬜ `ingest/core` — Source protocol, R2 content-addressed store, fetch-with-dedup,
-  generic validation gates, promoter, snapshot bookkeeping (next).
-- ⬜ S3 fetch → R2 → parse (golden PDF fixture) → validate → promote → query.
+- ✅ `packages/schema` — §2.2 DDL (`0001_init.sql`) + staging (`0002_staging.sql`),
+  offline-validated (16 tables, FK check clean).
+- ✅ `ingest/core` — Source protocol, immutable content-addressed raw store,
+  `fetch_with_dedup` (conditional GET + hash dedup), generic validation gates,
+  append-only promoter, snapshot bookkeeping, idempotent migrations, HttpxClient.
+- ✅ **S3 (NPPA ceilings) end to end**: fetch → R2 → parse (golden PDF) → validate
+  → promote → query. **26 tests green** (golden-file parser test runs with the
+  network disabled). Real entrypoint: `python -m ingest.run_nppa_ceiling`.
+- Parser: NPPA Compendium-2022 → 1043 ceiling rows (928 unique lines ≈ the
+  design's 928 scheduled formulations). Conservative line parser; skips-and-counts
+  anything it can't cleanly match (precision over recall).
+
+**Not yet (correctly deferred, not faked):**
+- S3 lands in `staging_ceiling`; canonical `ceiling_price` needs `formulation_id`
+  from the normaliser (Milestone 4–5).
+- Per-formulation supersession + the `price_drift` gate are canonical-layer (need
+  stable identity); staging uses snapshot-scoped supersession.
+- Currency: Compendium is 2022 (latest CI-reachable consolidated list); newer WPI
+  notifications are a pre-launch follow-up.
+
+**Next:** Milestone 3 (S2 kendra directory + S10 PIN centroids + geo). Per founder,
+probe free reachable channels for the blocked live portals (Google Drive folder /
+`data.gov.in`) before considering an India egress box.
 
 ### Milestone tracker (Part 12.2)
 
@@ -215,5 +234,20 @@ spikes/     THROWAWAY diagnostics (e.g. u1-ipdms). Never imported by product cod
   item. Reversible: S1 slots in once its egress channel (India box vs Google
   Drive vs data.gov.in) is chosen.
 - **2026-08-10 — S1/S2 live fetchers will likely need an India-resident egress.**
-  Not yet acted on; flagged because an always-on India box is the first thing in
-  this build that could incur cost. To be decided with the founder when S1 is next.
+  Founder chose: probe free reachable channels first (Google-Drive folder /
+  `data.gov.in`) before any always-on India box. Applies when S1/S2 come up.
+- **2026-08-10 — S3 lands in a `staging_ceiling` table, not canonical
+  `ceiling_price`.** Canonical rows need `formulation_id` (normaliser, Milestone
+  4–5). Staging is fully replayable from R2. Resolves the sequencing gap without
+  fabricating formulation IDs.
+- **2026-08-10 — Staging supersession is snapshot-scoped; `price_drift` gate
+  deferred to the canonical layer.** Parsed S3 rows have no stable per-formulation
+  identity (continuation rows recur verbatim: 1043 rows, 928 unique lines), so
+  row-keyed supersession/drift is unsound at staging. The unchanged-data no-op is
+  handled upstream by content-hash dedup (§3.3.1). Revisit when ceilings carry a
+  formulation_id.
+- **2026-08-10 — `HttpxClient` verifies TLS via the CA bundle with
+  `trust_env=False`** (direct/transparent egress). In this sandbox the explicit
+  HTTPS_PROXY CONNECT path presents a cert that doesn't chain to the bundle, while
+  the direct path verifies cleanly (proven: data.gov.in 200). Note also nppa.gov.in
+  serves an incomplete chain and 503s CI egress IPs — production fetches from India.

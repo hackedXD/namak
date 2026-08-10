@@ -1,0 +1,6 @@
+# Ingestion plane (Python). Pinned so golden-file parses are deterministic —
+# a pdfplumber bump can change text extraction, which the row-count regression
+# guard would (correctly) flag.
+pdfplumber==0.11.10
+httpx==0.28.1
+pytest==9.1.1

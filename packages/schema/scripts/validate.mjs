@@ -25,6 +25,7 @@ const EXPECTED_TABLES = [
   'substitution_rule',
   'match_audit',
   'knowledge_version',
+  'staging_ceiling',
 ];
 
 const db = new DatabaseSync(':memory:');

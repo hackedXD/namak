@@ -1,0 +1,61 @@
+{
+  "_comment": "Golden expectations for the NPPA Compendium-2022 parser. Fixture is REAL bytes fetched from nppa.gov.in (design non-negotiable: no invented data). The 'rows' below are hand-verified against the printed PDF (anesthetics section, page 3). 'total_rows' is a regression guard, deterministic with the pinned pdfplumber in requirements.txt.",
+  "fixture_sha256": "af77341daa9dc5e6a17823dfd62a45c504ac2efb1b8f3a9e0d48404150ff7e57",
+  "total_rows": 1043,
+  "rows": [
+    {
+      "source_page": 3,
+      "nlem_section": "1.1.1",
+      "raw_description": "Halothane Inhalation 1 ml",
+      "ceiling_price": 6.5,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "1.1.1 Halothane Inhalation 1 ml 6.5 1499(E) 30.03.2022"
+    },
+    {
+      "source_page": 3,
+      "nlem_section": "1.1.2",
+      "raw_description": "Isoflurane Inhalation 1 ml",
+      "ceiling_price": 11.61,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "1.1.2 Isoflurane Inhalation 1 ml 11.61 1499(E) 30.03.2022"
+    },
+    {
+      "source_page": 3,
+      "nlem_section": "1.1.3",
+      "raw_description": "Ketamine Injection 10 mg/ml 1 ml",
+      "ceiling_price": 11.76,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "1.1.3 Ketamine Injection 10 mg/ml 1 ml 11.76 1499(E) 30.03.2022"
+    },
+    {
+      "source_page": 3,
+      "nlem_section": null,
+      "raw_description": "Injection 50 mg/ml 1 ml",
+      "ceiling_price": 11.61,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "Injection 50 mg/ml 1 ml 11.61 1499(E) 30.03.2022"
+    },
+    {
+      "source_page": 3,
+      "nlem_section": "1.1.4",
+      "raw_description": "Nitrous oxide Inhalation Cubic Meter",
+      "ceiling_price": 259.43,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "1.1.4 Nitrous oxide Inhalation Cubic Meter 259.43 1499(E) 30.03.2022"
+    },
+    {
+      "source_page": 3,
+      "nlem_section": "1.1.7",
+      "raw_description": "Sevoflurane Inhalation 1 ml",
+      "ceiling_price": 33.21,
+      "notification_no": "1499(E)",
+      "notification_date": "2022-03-30",
+      "raw_line": "1.1.7 Sevoflurane Inhalation 1 ml 33.21 1499(E) 30.03.2022"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Python tooling config for the ingestion plane (ingest/). The monorepo is
+# polyglot: JS/TS workspace config lives in package.json / pnpm-workspace.yaml;
+# this file configures pytest for the Python side.
+[tool.pytest.ini_options]
+testpaths = ["ingest/tests"]
+pythonpath = ["."]
+addopts = "-q"
