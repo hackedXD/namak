@@ -81,16 +81,19 @@ egress channel is settled. Recorded in the Decisions log below.
 - ✅ `packages/geo` — pure TS geohash (encode + neighbours) + haversine + query
   helpers (§4.5). 12 tests (golden + fast-check property); typecheck clean.
   Standard base32 geohash, validated against canonical vectors.
-- ⏳ **Data sourcing is at a decision point (founder input needed):**
-  - **S10 PIN centroids:** official `data.gov.in` pincode API is reachable but
-    `lat/long` are `NA` across the sample (India Post geocodes only some office
-    types) and the free sample key caps at 10 rows/call (bulk needs a registered
-    key). Good-coverage alternatives are **community CC** datasets (datameet /
-    `sanand0/pincode`) — a different license tier than government tier-1.
-  - **S2 kendra directory (~16k outlets w/ address+coords):** NOT available as a
-    reachable official CSV — `data.gov.in` only has state-wise *counts*. The full
-    per-kendra list is behind the blocked `janaushadhi:8443` API (needs India
-    egress), or possibly the Google-Drive folder / a published PDF list.
+- ✅ **S10 PIN centroids (GeoNames) end to end, live**: fetch → R2 → parse →
+  validate → promote → query. 19,238 pincode centroids in D1, 100% coord coverage.
+  Canonical `pin_centroid` table with proper per-pincode append-only supersession
+  (pincode is a stable identity). `python -m ingest.run_geonames_pincode` verified
+  live. Source = GeoNames **CC-BY 4.0** (tier-2 in the licensing register; founder
+  chose community CC over the coordinate-empty official India Post data).
+- ⏳ **S2 kendra directory — founder running the probe.** Not a reachable official
+  CSV (`data.gov.in` has only state-wise counts); the ~16k per-kendra list is
+  behind the blocked `janaushadhi:8443` API. Spike prepared for the founder to run
+  from an Indian IP: `spikes/s2-kendra/probe.py`. S2 ingestion (fetch → R2 → parse
+  → geohash7 → validate → promote → proximity) will be wired once real data is in
+  hand. Watch for: AES-encrypted responses + Cloudflare Turnstile (both in the
+  site bundle).
 
 **Toolchain note:** pnpm workspace now installed (turbo, typescript, vitest,
 fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README).
