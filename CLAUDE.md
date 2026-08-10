@@ -108,16 +108,20 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 | 4–5 | Normalisation engine | ≥95% on 1,000-item golden corpus | 🟡 engine + property tests done; corpus pending |
 | 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | 🟡 cascade + safety gates done; 500-pair eval + LLM adapter pending |
 | 7 | Equivalence engine + NTI list | Clinical review sign-off | 🟡 engine + NTI gate + tests done; NTI list awaiting named sign-off (U6) |
-| 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | not started |
+| 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | 🟡 ladder engine done (Appendix A verified); API + 200-golden pending |
 | 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | not started |
 | 11 | Observability, staging gate, DR drill | Timed full restore from R2 | not started |
 | 12 | Launch | Live, indexed, `/sources` public | not started |
 
 **Packages so far:** `@salt/schema` (SQL), `@salt/domain` (types), `@salt/geo`
 (geohash+haversine), `@salt/normalize` (§4.1), `@salt/resolve` (§4.2 cascade),
-`@salt/equivalence` (§4.3 safety engine). `ingest/` (Python): core + S3 + S10.
-`data/nti_molecules.yaml` (curated, awaiting sign-off). Tests: 35 Python + 101 TS
-(geo 12, normalize 23, resolve 21, equivalence 45) green.
+`@salt/equivalence` (§4.3 safety engine), `@salt/pricing` (§4.4 ladder).
+`ingest/` (Python): core + S3 + S10. `data/nti_molecules.yaml` (curated, awaiting
+sign-off). Tests: 35 Python + 118 TS (geo 12, normalize 23, resolve 21,
+equivalence 45, pricing 17) green.
+
+**The clinical engine chain is complete and pure:** raw composition → normalise
+→ resolve → equivalence → ladder. All zero-I/O, all data injected, all testable.
 
 **Build ONE source end to end (fetch → R2 → parse → validate → promote → query)
 before adding a second. Do not scaffold all ten sources upfront.**
