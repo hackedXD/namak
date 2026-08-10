@@ -37,6 +37,12 @@ export interface CanonicalFormulation {
   components: CanonicalComponent[]; // sorted by molecule.id ascending
 }
 
+/** A formulation as stored in the `formulation` table: a canonical formulation
+ *  plus its database id. This is what the resolver maps products TO. */
+export interface FormulationRecord extends CanonicalFormulation {
+  id: number;
+}
+
 /** A neutral Result type — normalisation and equivalence never throw for
  *  expected failures; a half-resolved formulation is a safety hazard (§4.1 #8). */
 export type Result<T, E> =

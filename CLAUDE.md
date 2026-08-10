@@ -106,7 +106,7 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 | 1–2 | Ingestion core + S1, S3 | PMBJP + NPPA ceilings in D1, replayable from R2 | ✅ core + S3 done; S1 deferred (blocked API) |
 | 3 | S2, S10 + geo | 14k kendras geocoded, prefix search works | 🟡 geo + S10 done; S2 pending founder probe |
 | 4–5 | Normalisation engine | ≥95% on 1,000-item golden corpus | 🟡 engine + property tests done; corpus pending |
-| 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | not started |
+| 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | 🟡 cascade + safety gates done; 500-pair eval + LLM adapter pending |
 | 7 | Equivalence engine + NTI list | Clinical review sign-off | not started |
 | 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | not started |
 | 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | not started |
@@ -114,8 +114,9 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 | 12 | Launch | Live, indexed, `/sources` public | not started |
 
 **Packages so far:** `@salt/schema` (SQL), `@salt/domain` (types), `@salt/geo`
-(geohash+haversine), `@salt/normalize` (§4.1). `ingest/` (Python): core + S3 +
-S10. Tests: 35 Python + 35 TS (geo 12, normalize 23) green.
+(geohash+haversine), `@salt/normalize` (§4.1), `@salt/resolve` (§4.2 cascade).
+`ingest/` (Python): core + S3 + S10. Tests: 35 Python + 56 TS (geo 12,
+normalize 23, resolve 21) green.
 
 **Build ONE source end to end (fetch → R2 → parse → validate → promote → query)
 before adding a second. Do not scaffold all ten sources upfront.**
@@ -273,3 +274,10 @@ spikes/     THROWAWAY diagnostics (e.g. u1-ipdms). Never imported by product cod
   HTTPS_PROXY CONNECT path presents a cert that doesn't chain to the bundle, while
   the direct path verifies cleanly (proven: data.gov.in 200). Note also nppa.gov.in
   serves an incomplete chain and 503s CI egress IPs — production fetches from India.
+- **2026-08-10 — Resolver Tier-2 deviates from the design's literal scoring, for
+  precision (§4.2, target 0.98).** (a) Strength similarity is magnitude+salt-aware
+  (min/max ratio, zeroed on salt/unit mismatch), NOT cosine — cosine is 1.0 for any
+  single-molecule strength and can't tell 5 mg from 2.5 mg. (b) Tier-2 auto-accept
+  additionally requires an exact molecule-set + exact strengths/salts, because the
+  0.92 score threshold alone passes 6 mg-vs-5 mg (0.95) with no runner-up. Near
+  matches fall through to LLM/human. Both documented in `@salt/resolve`.

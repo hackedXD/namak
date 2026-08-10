@@ -49,6 +49,25 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9
 
+  packages/resolve:
+    dependencies:
+      '@salt/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@salt/normalize':
+        specifier: workspace:*
+        version: link:../normalize
+    devDependencies:
+      fast-check:
+        specifier: ^3.23.1
+        version: 3.23.2
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9
+
   packages/schema: {}
 
 packages:

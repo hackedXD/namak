@@ -47,6 +47,11 @@ Last updated: 2026-08-10.
       exhaust free channels first. If needed later: Oracle Cloud Always Free
       (Hyderabad/Mumbai) — an always-on box to set up. Flagged because it's the
       first thing that could carry cost/ops.
+- [ ] **LLM adjudicator (resolver Tier 3).** The resolver has an injected LLM port
+      but no adapter/API key wired (zero cost so far). When product→formulation
+      coverage needs the last 5–10%, decide a vision/LLM provider + key (~₹0.05/row,
+      §4.2). Until then the resolver routes those to human review — safe, just lower
+      recall.
 - [ ] Future Part-15 calls (not yet due): **U2** e-pharmacy channel, **U3** SaMD
       legal opinion (counsel, before OCR), **U4** consumer accounts, **U7** kendra
       stock partnership, **U8** OCR handwriting corpus.

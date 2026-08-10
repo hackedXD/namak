@@ -1,0 +1,16 @@
+{
+  "name": "@salt/resolve",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "§4.2 brand→formulation resolver cascade (deterministic→fuzzy→LLM). Pure; LLM injected.",
+  "main": "src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo noop && exit 0"
+  },
+  "dependencies": { "@salt/domain": "workspace:*", "@salt/normalize": "workspace:*" },
+  "devDependencies": { "typescript": "^5.7.2", "vitest": "^2.1.8", "fast-check": "^3.23.1" }
+}
