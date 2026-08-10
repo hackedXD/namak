@@ -1,0 +1,9 @@
+{
+  "name": "u1-ipdms-spike",
+  "private": true,
+  "type": "module",
+  "description": "THROWAWAY spike: probe NPPA Pharma Sahi Daam / IPDMS 2.0 enumerability (design §3.2 / Part 15 U1)",
+  "dependencies": {
+    "playwright-core": "^1.62.1"
+  }
+}

@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.turbo/
+.astro/
+.wrangler/
+
+# Env & secrets (never commit — Wrangler/GitHub secrets only)
+.env
+.env.*
+.dev.vars
+
+# OS / editor
+.DS_Store
+*.log
