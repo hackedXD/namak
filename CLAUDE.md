@@ -102,16 +102,20 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 
 | Wk | Milestone | Exit criterion | State |
 |---|---|---|---|
-| 0 | S5 enumerability spike | Written answer on Pharma Sahi Daam | ⏳ blocked (see above) |
-| 1–2 | Ingestion core + S1, S3 | PMBJP + NPPA ceilings in D1, replayable from R2 | not started |
-| 3 | S2, S10 + geo | 14k kendras geocoded, prefix search works | not started |
-| 4–5 | Normalisation engine | ≥95% on 1,000-item golden corpus | not started |
+| 0 | S5 enumerability spike | Written answer on Pharma Sahi Daam | ⏳ blocked (needs India-IP run) |
+| 1–2 | Ingestion core + S1, S3 | PMBJP + NPPA ceilings in D1, replayable from R2 | ✅ core + S3 done; S1 deferred (blocked API) |
+| 3 | S2, S10 + geo | 14k kendras geocoded, prefix search works | 🟡 geo + S10 done; S2 pending founder probe |
+| 4–5 | Normalisation engine | ≥95% on 1,000-item golden corpus | 🟡 engine + property tests done; corpus pending |
 | 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | not started |
 | 7 | Equivalence engine + NTI list | Clinical review sign-off | not started |
 | 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | not started |
 | 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | not started |
 | 11 | Observability, staging gate, DR drill | Timed full restore from R2 | not started |
 | 12 | Launch | Live, indexed, `/sources` public | not started |
+
+**Packages so far:** `@salt/schema` (SQL), `@salt/domain` (types), `@salt/geo`
+(geohash+haversine), `@salt/normalize` (§4.1). `ingest/` (Python): core + S3 +
+S10. Tests: 35 Python + 35 TS (geo 12, normalize 23) green.
 
 **Build ONE source end to end (fetch → R2 → parse → validate → promote → query)
 before adding a second. Do not scaffold all ten sources upfront.**
