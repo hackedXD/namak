@@ -123,6 +123,40 @@ def gate_price_drift(
     )
 
 
+def gate_required_fields(rows: list[dict], required: tuple[str, ...]) -> GateResult:
+    if not rows:
+        return GateResult("required_fields", False, "no rows")
+    bad = sum(
+        1 for r in rows if not all(r.get(k) not in (None, "") for k in required)
+    )
+    return GateResult(
+        "required_fields", bad == 0, f"{bad}/{len(rows)} rows missing a field" if bad else ""
+    )
+
+
+def gate_coord_sanity(
+    rows: list[dict],
+    lat_range: tuple[float, float],
+    lng_range: tuple[float, float],
+    lat_key: str = "lat",
+    lng_key: str = "lng",
+) -> GateResult:
+    """Coordinates must fall inside a plausible bounding box (India by default)."""
+    lo_la, hi_la = lat_range
+    lo_ln, hi_ln = lng_range
+    bad = 0
+    for r in rows:
+        try:
+            la = float(r[lat_key])
+            ln = float(r[lng_key])
+        except (KeyError, TypeError, ValueError):
+            bad += 1
+            continue
+        if not (lo_la <= la <= hi_la and lo_ln <= ln <= hi_ln):
+            bad += 1
+    return GateResult("coord_sanity", bad == 0, f"{bad} out-of-box coords" if bad else "")
+
+
 def run_generic_gates(
     rows: list[dict],
     prev_row_count: int | None = None,

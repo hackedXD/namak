@@ -1,0 +1,11 @@
+{
+  "_comment": "Golden expectations for the GeoNames India (S10) parser. Fixture IN.zip is REAL bytes from download.geonames.org (CC-BY 4.0). Centroids below are the mean of each pincode's place coordinates, verified from the real data.",
+  "fixture_sha256": "636f5e89bee0cd350acfee898e9999bf97b224793823ea9b900f83e470c8f8a9",
+  "total_pincodes": 19238,
+  "rows": [
+    { "pincode": "110001", "lat": 28.64269, "lng": 77.219429, "place_count": 21, "state": "Delhi", "district": "New Delhi" },
+    { "pincode": "560001", "lat": 13.2257, "lng": 77.575, "place_count": 9, "state": "Karnataka", "district": "Bengaluru" },
+    { "pincode": "400001", "lat": 18.9474, "lng": 72.8138, "place_count": 6, "state": "Maharashtra", "district": "Mumbai" },
+    { "pincode": "700001", "lat": 22.5553, "lng": 88.3558, "place_count": 14, "state": "West Bengal", "district": "Kolkata" }
+  ]
+}

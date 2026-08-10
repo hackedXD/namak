@@ -26,6 +26,7 @@ const EXPECTED_TABLES = [
   'match_audit',
   'knowledge_version',
   'staging_ceiling',
+  'pin_centroid',
 ];
 
 const db = new DatabaseSync(':memory:');

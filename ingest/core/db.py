@@ -178,6 +178,19 @@ class Db:
         )
         return cur.rowcount
 
+    # ---- canonical: PIN centroids (S10) ---------------------------------
+
+    def find_current_pincentroid(self, pincode: str) -> sqlite3.Row | None:
+        return self.conn.execute(
+            "SELECT * FROM pin_centroid WHERE pincode=? AND valid_to IS NULL",
+            (pincode,),
+        ).fetchone()
+
+    def current_pincentroids(self) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT * FROM pin_centroid WHERE valid_to IS NULL ORDER BY pincode"
+        ).fetchall()
+
     # ---- version --------------------------------------------------------
 
     def next_knowledge_version(self, snapshot_ids: list[int]) -> int:

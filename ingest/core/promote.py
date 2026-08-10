@@ -31,6 +31,14 @@ class PromotionResult:
     superseded: int
 
 
+@dataclass(frozen=True)
+class PinCentroidPromotionResult:
+    version: int
+    inserted: int
+    superseded: int
+    unchanged: int
+
+
 def promote_ceilings(db: Db, snapshot_id: int, rows: list[dict]) -> PromotionResult:
     now = utcnow_iso()
 
@@ -62,3 +70,57 @@ def promote_ceilings(db: Db, snapshot_id: int, rows: list[dict]) -> PromotionRes
     version = db.next_knowledge_version([snapshot_id])
     db.set_snapshot_status(snapshot_id, "promoted", row_count=inserted)
     return PromotionResult(version=version, inserted=inserted, superseded=superseded)
+
+
+def promote_pincentroids(
+    db: Db, snapshot_id: int, source_id: str, rows: list[dict]
+) -> PinCentroidPromotionResult:
+    """Append-only, PER-PINCODE supersession. Because a pincode is a stable
+    identity (unlike a parsed ceiling description), we can do proper row-level
+    close-out: an unchanged centroid is a no-op, a moved one closes the old row
+    (valid_to) and inserts a new one. History is retained; nothing is UPDATEd
+    in place."""
+    inserted = superseded = unchanged = 0
+    now = utcnow_iso()
+
+    with db.conn:
+        for r in rows:
+            existing = db.find_current_pincentroid(r["pincode"])
+            if (
+                existing is not None
+                and round(float(existing["lat"]), 6) == r["lat"]
+                and round(float(existing["lng"]), 6) == r["lng"]
+            ):
+                unchanged += 1
+                continue
+            if existing is not None:
+                db.conn.execute(
+                    "UPDATE pin_centroid SET valid_to=? WHERE id=? AND valid_to IS NULL",
+                    (now, existing["id"]),
+                )
+                superseded += 1
+            db.conn.execute(
+                """INSERT INTO pin_centroid(
+                     pincode, lat, lng, place_count, state, district,
+                     source_id, snapshot_id, valid_from, valid_to, ingested_at)
+                   VALUES(?,?,?,?,?,?,?,?,?,NULL,?)""",
+                (
+                    r["pincode"],
+                    r["lat"],
+                    r["lng"],
+                    r["place_count"],
+                    r.get("state"),
+                    r.get("district"),
+                    source_id,
+                    snapshot_id,
+                    now,
+                    now,
+                ),
+            )
+            inserted += 1
+
+    version = db.next_knowledge_version([snapshot_id])
+    db.set_snapshot_status(snapshot_id, "promoted", row_count=inserted)
+    return PinCentroidPromotionResult(
+        version=version, inserted=inserted, superseded=superseded, unchanged=unchanged
+    )
