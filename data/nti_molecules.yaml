@@ -1,0 +1,74 @@
+# Narrow Therapeutic Index (NTI) molecules — SAFETY-CRITICAL curated artifact.
+# Design §4.3. These are molecules where small blood-level changes risk toxicity
+# or loss of efficacy, so an app-driven brand switch is a real hazard. The engine
+# never auto-substitutes them: it shows the price ladder but returns
+# CONSULT_REQUIRED with no "switch and save" call to action.
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │ STATUS: AWAITING NAMED CLINICAL SIGN-OFF (design §9.4, Part 15 U6).         │
+# │ The molecules below are well-established NTI drugs in clinical literature,  │
+# │ but this artifact is NOT production-usable until a NAMED pharmacist reviews │
+# │ and signs it (set reviewed_by + reviewed_on + citation). Until then treat   │
+# │ it as a draft: safe to over-include (fail closed), not to rely on as final. │
+# └────────────────────────────────────────────────────────────────────────────┘
+reviewed_by: PENDING          # MUST be a named pharmacist before launch (U6)
+reviewed_on: null
+version: 0
+citation: >
+  Minimum set per design §4.3. General basis: US FDA narrow-therapeutic-index
+  guidance and standard clinical references (e.g. bioequivalence tightening for
+  NTI drugs). Class rules for antiretrovirals and anti-tubercular FDCs per §4.3.
+  To be replaced with specific per-molecule citations at clinical review.
+
+# Explicit minimum set (design §4.3).
+molecules:
+  - inn: warfarin
+    reason: anticoagulant; narrow window between clot and bleed
+  - inn: levothyroxine
+    reason: thyroid replacement; small dose changes shift TSH
+  - inn: phenytoin
+    reason: antiepileptic; non-linear kinetics, saturable metabolism
+  - inn: carbamazepine
+    reason: antiepileptic; auto-induction, narrow window
+  - inn: valproate
+    reason: antiepileptic; concentration-dependent toxicity
+  - inn: lithium
+    reason: mood stabiliser; toxic near therapeutic range
+  - inn: digoxin
+    reason: cardiac glycoside; narrow toxic:therapeutic ratio
+  - inn: theophylline
+    reason: bronchodilator; seizures/arrhythmia on small increases
+  - inn: ciclosporin
+    reason: immunosuppressant; graft loss vs nephrotoxicity
+  - inn: tacrolimus
+    reason: immunosuppressant; narrow window, high variability
+  - inn: sirolimus
+    reason: immunosuppressant; narrow window
+  - inn: mycophenolate
+    reason: immunosuppressant; exposure-dependent efficacy/toxicity
+  - inn: procainamide
+    reason: antiarrhythmic; proarrhythmia on level changes
+
+# Class rules (§4.3): every molecule in these classes is treated as NTI. The
+# ingestion/lexicon layer sets is_nti on each such molecule; representative
+# members are listed so the enforcement test can assert them explicitly.
+classes:
+  - name: antiretrovirals
+    note: consistent levels critical for viral suppression / resistance
+    members:
+      - efavirenz
+      - nevirapine
+      - lopinavir
+      - ritonavir
+      - dolutegravir
+      - tenofovir
+      - lamivudine
+      - zidovudine
+      - abacavir
+  - name: anti_tubercular
+    note: anti-TB agents and their FDCs; adherence/levels critical for resistance
+    members:
+      - rifampicin
+      - isoniazid
+      - pyrazinamide
+      - ethambutol

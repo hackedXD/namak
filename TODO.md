@@ -30,12 +30,13 @@ Last updated: 2026-08-10.
 
 ## B. Decisions / sign-offs only you own
 
-- [ ] **NTI list clinical sign-off** (design Part 15 **U6**). The narrow-therapeutic-
-      index blocklist (warfarin, levothyroxine, phenytoin, …) needs a **named
-      pharmacist** to review, date, and cite it before the equivalence engine can
-      ship (Milestone 7). I'll draft the list from the design + literature; it is
-      not usable until a real clinician signs off. Decide: contract pharmacist vs
-      advisory board.
+- [ ] **NTI list clinical sign-off** (design Part 15 **U6**). The list is drafted
+      at **`data/nti_molecules.yaml`** (`reviewed_by: PENDING`) — warfarin,
+      levothyroxine, phenytoin, … + antiretroviral & anti-TB classes. It needs a
+      **named pharmacist** to review, date, and cite it, then set `reviewed_by` /
+      `reviewed_on` / per-molecule `citation`. The equivalence engine is built and
+      tested against it, but it is **not production-usable until signed** (a test
+      guards `reviewed_by == PENDING`). Decide: contract pharmacist vs advisory board.
 - [ ] **NPPA ceiling currency.** The ingested Compendium is **2022** (latest
       CI-reachable consolidated list). Before launch we must ingest newer WPI /
       ceiling notifications so users see *current* legal maxima. Help needed:

@@ -1,0 +1,22 @@
+{
+  "name": "@salt/equivalence",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "§4.3 equivalence & substitution safety engine + NTI gate. Pure TS; recall injected.",
+  "main": "src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo noop && exit 0"
+  },
+  "dependencies": { "@salt/domain": "workspace:*" },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "js-yaml": "^4.1.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.0"
+  }
+}
