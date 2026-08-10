@@ -108,20 +108,23 @@ fast-check). `pnpm --filter @salt/geo test`. Python: `pytest` (see ingest/README
 | 4–5 | Normalisation engine | ≥95% on 1,000-item golden corpus | 🟡 engine + property tests done; corpus pending |
 | 6 | Resolver Tiers 1–2 | ≥85% auto-resolved; audit rows written | 🟡 cascade + safety gates done; 500-pair eval + LLM adapter pending |
 | 7 | Equivalence engine + NTI list | Clinical review sign-off | 🟡 engine + NTI gate + tests done; NTI list awaiting named sign-off (U6) |
-| 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | 🟡 ladder engine done (Appendix A verified); API + 200-golden pending |
+| 8 | Ladder engine + API | `/v1/ladder` correct on 200 golden formulations | 🟡 ladder engine + Hono API (`/v1/ladder`, `/v1/meta/health`) done & tested; needs canonical data + deploy |
 | 9–10 | Astro site, static gen | 50k pages; Lighthouse budgets pass | not started |
 | 11 | Observability, staging gate, DR drill | Timed full restore from R2 | not started |
 | 12 | Launch | Live, indexed, `/sources` public | not started |
 
-**Packages so far:** `@salt/schema` (SQL), `@salt/domain` (types), `@salt/geo`
-(geohash+haversine), `@salt/normalize` (§4.1), `@salt/resolve` (§4.2 cascade),
-`@salt/equivalence` (§4.3 safety engine), `@salt/pricing` (§4.4 ladder).
-`ingest/` (Python): core + S3 + S10. `data/nti_molecules.yaml` (curated, awaiting
-sign-off). Tests: 35 Python + 118 TS (geo 12, normalize 23, resolve 21,
-equivalence 45, pricing 17) green.
+**Packages so far:** `@salt/schema` (SQL), `@salt/domain` (types), `@salt/geo`,
+`@salt/normalize` (§4.1), `@salt/resolve` (§4.2), `@salt/equivalence` (§4.3),
+`@salt/pricing` (§4.4), `@salt/db` (repo port + D1/SQLite impls — the only SQL),
+`apps/api` (Workers+Hono, §5). `ingest/` (Python): core + S3 + S10.
+`data/nti_molecules.yaml` (awaiting sign-off). Tests: 35 Python + 130 TS
+(geo 12, db 5, normalize 23, resolve 21, equivalence 45, pricing 17, api 7).
 
-**The clinical engine chain is complete and pure:** raw composition → normalise
-→ resolve → equivalence → ladder. All zero-I/O, all data injected, all testable.
+**The clinical engine chain is complete and pure** (raw → normalise → resolve →
+equivalence → ladder), and the **API wires it to D1** via the `@salt/db` port
+(same repos in tests and on Workers). Read-path is real and tested; it needs
+canonical formulation/product data (blocked on S1 + the normaliser→canonical
+promotion) and a Cloudflare account to deploy.
 
 **Build ONE source end to end (fetch → R2 → parse → validate → promote → query)
 before adding a second. Do not scaffold all ten sources upfront.**

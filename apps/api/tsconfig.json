@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "paths": {
+      "@salt/domain": ["../../packages/domain/src/index.ts"],
+      "@salt/db": ["../../packages/db/src/index.ts"],
+      "@salt/pricing": ["../../packages/pricing/src/index.ts"],
+      "@salt/equivalence": ["../../packages/equivalence/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

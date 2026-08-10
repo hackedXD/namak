@@ -1,0 +1,13 @@
+# Cloudflare Workers deploy config (design Part 8). Deploying needs a Cloudflare
+# account (see TODO.md). To wire up:
+#   wrangler d1 create salt      # then paste the database_id below
+#   wrangler d1 migrations apply salt   # applies packages/schema migrations
+#   wrangler deploy
+name = "salt-api"
+main = "src/index.ts"
+compatibility_date = "2026-08-10"
+
+[[d1_databases]]
+binding = "DB"                 # → env.DB (the @salt/db D1Like port)
+database_name = "salt"
+database_id = "REPLACE_AFTER_wrangler_d1_create"

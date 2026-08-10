@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "paths": { "@salt/domain": ["../domain/src/index.ts"], "@salt/geo": ["../geo/src/index.ts"] }
+  },
+  "include": ["src"]
+}
