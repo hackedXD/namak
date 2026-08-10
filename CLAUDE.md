@@ -21,24 +21,45 @@ and flag the disagreement.
 
 ## Current build stage
 
-**Milestone 0 — U1 enumerability spike (Part 12.2, week 0).**
+**Milestone 1–2 — Ingestion core + first source (Part 12.2).** Founder approved
+proceeding here (2026-08-10) after the U1 spike; U1 itself is being closed out of
+band by the founder running the probe from an Indian IP.
 
-- **Status: BLOCKED on reachability, awaiting founder input.** The Pharma Sahi
-  Daam portal `nppaipdms.gov.in` (source S5) refuses connections from this cloud
-  environment's datacenter IP — TLS handshake reset, confirmed with both curl and
-  a real Chromium. The four U1 questions (JSON endpoint? enumeration mode?
-  captcha/rate-limit? pagination cursors?) **cannot be answered from CI** and need
-  a probe from an Indian IP. Full write-up: `spikes/u1-ipdms/FINDINGS.md`.
-- Good news: S5 is the *only* blocked source among the ones checked. **S1 (PMBJP
-  catalogue), S3 (NPPA ceilings), S10 (PIN centroids) — the Milestone 1–3 inputs —
-  are all reachable.** So ingestion-core work is not gated on U1.
-- **Do not start production code until the founder has seen the U1 findings and
-  decided** how to source S5 (India-resident fetcher vs reverse-lookup fallback
-  §3.2 vs defer). U1 is one of the eight open decisions in Part 15 → stop and ask,
-  don't pick.
+### Reachability reality (measured 2026-08-10, from CI datacenter IP) — IMPORTANT
 
-Next milestone once unblocked: **1–2, Ingestion core + S1 + S3** (PMBJP catalogue
-and NPPA ceilings in D1, replayable from R2).
+The egress vantage point materially reorders the source plan:
+
+| Source | Host / channel | From CI | Notes |
+|---|---|---|---|
+| **S3 NPPA ceilings** | `nppa.gov.in` :443 | ✅ reachable | Server-rendered; real ceiling-price + compendium PDFs downloadable. **Verified a real PDF fetch.** |
+| S10 PIN centroids | `data.gov.in` :443 | ✅ reachable | |
+| S8 CDSCO, MoHFW, eGazette | `*.gov.in` :443 | ✅ reachable | |
+| **S1 PMBJP catalogue** | `janaushadhi.gov.in` **:8443** API | ❌ **blocked** | Site is a React SPA on :443 (reachable, no data); the JSON data API is on **:8443**, which **resets the TLS handshake from our IP** — same block class as S5. |
+| **S5 Pharma Sahi Daam** | `nppaipdms.gov.in` | ❌ blocked | The original U1 finding. |
+
+**Consequence:** the CI-egress block is **not S5-only** — it also hits S1's live
+data API and S2's kendra API (both on janaushadhi `:8443`). Any fetcher for those
+portals needs an **India-resident egress** (design §5.4: relocatable fetcher →
+Oracle Cloud Always Free India region, or a small always-on box; parse/validate/
+promote still run in CI over R2). Reachable *alternatives* to probe for S1 before
+committing to an India box: a Google-Drive folder the SPA references (144 PDFs,
+Drive is reachable) and `data.gov.in` datasets.
+
+### Decision (self-resolved, non-Part-15): build **S3 first**, not S1
+
+Design Milestone 1–2 lists "S1, S3"; the build rule is one source end-to-end
+first. **S3 is chosen as that first source** because (a) it is reachable from CI
+with real data today, and (b) the statutory ceiling is the product's core
+differentiator ("the one number no competitor shows", §6.3). S1 follows once its
+egress channel is settled. Recorded in the Decisions log below.
+
+### Milestone 1–2 state
+
+- ✅ Monorepo skeleton (pnpm + Turborepo, TS strict).
+- ✅ `packages/schema` — §2.2 DDL as migration `0001_init.sql`, offline-validated.
+- ⬜ `ingest/core` — Source protocol, R2 content-addressed store, fetch-with-dedup,
+  generic validation gates, promoter, snapshot bookkeeping (next).
+- ⬜ S3 fetch → R2 → parse (golden PDF fixture) → validate → promote → query.
 
 ### Milestone tracker (Part 12.2)
 
@@ -186,4 +207,13 @@ spikes/     THROWAWAY diagnostics (e.g. u1-ipdms). Never imported by product cod
 
 ## Decisions log (self-resolved, non-Part-15 ambiguities — for founder review)
 
-_None yet._ (U1 is a Part-15 decision and is being escalated, not logged here.)
+- **2026-08-10 — Build S3 (NPPA ceilings) as the first end-to-end source, ahead of
+  S1.** Rationale: S1's live data API (`janaushadhi.gov.in:8443`) is IP-blocked
+  from CI/datacenter egress (measured), whereas S3 (`nppa.gov.in`) is reachable
+  with real data; and the statutory ceiling is the product's core differentiator.
+  Resolved via principle §1.1 (build on what's real/reachable) — not a Part-15
+  item. Reversible: S1 slots in once its egress channel (India box vs Google
+  Drive vs data.gov.in) is chosen.
+- **2026-08-10 — S1/S2 live fetchers will likely need an India-resident egress.**
+  Not yet acted on; flagged because an always-on India box is the first thing in
+  this build that could incur cost. To be decided with the founder when S1 is next.
