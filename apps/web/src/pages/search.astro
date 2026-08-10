@@ -2,6 +2,7 @@
 import Layout from '../components/Layout.astro';
 import SearchBox from '../components/SearchBox.astro';
 import { searchAll } from '../lib/search';
+import { withBase } from '../lib/base';
 const q = (Astro.url.searchParams.get('q') ?? '').trim();
 const results = q ? searchAll(q, 20) : [];
 ---
@@ -14,13 +15,13 @@ const results = q ? searchAll(q, 20) : [];
     {q && results.length === 0 && (
       <div class="nores card card-pad" data-reveal>
         <h2 class="serif">No matches for “{q}”.</h2>
-        <p class="muted">Try a molecule name like <a href="/molecule/paracetamol" class="ulink">paracetamol</a> or <a href="/molecule/metformin" class="ulink">metformin</a>, or a brand like <a href="/medicine/dolo-650" class="ulink">Dolo 650</a>.</p>
+        <p class="muted">Try a molecule name like <a href={withBase('/molecule/paracetamol')} class="ulink">paracetamol</a> or <a href={withBase('/molecule/metformin')} class="ulink">metformin</a>, or a brand like <a href={withBase('/medicine/dolo-650')} class="ulink">Dolo 650</a>.</p>
       </div>
     )}
     <ul class="res-list">
       {results.map((h, i) => (
         <li data-reveal data-reveal-delay={i * 30}>
-          <a href={h.href} class="res card">
+          <a href={withBase(h.href)} class="res card">
             <span class:list={['sb-badge', h.type]}>{h.type}</span>
             <div class="res-text"><div class="res-title">{h.title}</div><div class="muted res-sub">{h.subtitle}</div></div>
             <span class="res-arrow arrow">→</span>

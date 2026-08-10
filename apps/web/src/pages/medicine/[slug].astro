@@ -6,6 +6,7 @@ import { products, formulationById, moleculesOf } from '../../lib/mock';
 import { buildLadder } from '../../lib/ladder';
 import { conversionForProduct } from '../../lib/convert';
 import { inr, inr0, channelLabel, prettyDate } from '../../lib/format';
+import { withBase } from '../../lib/base';
 
 export function getStaticPaths() {
   return products.map((p) => ({ params: { slug: p.slug } }));
@@ -22,8 +23,8 @@ const asOf = '2026-07-28';
 <Layout title={`${product.brand} — price & cheaper equivalents · Salt`} description={`${product.brand} (${f.label}) price, the legal maximum, and every therapeutically-equivalent option ranked by price.`}>
   <div class="wrap page">
     <nav class="crumbs mono muted" aria-label="Breadcrumb">
-      <a href="/" class="ulink">Search</a> ›
-      <a href={`/molecule/${mols[0]?.slug}`} class="ulink">{mols[0]?.name}</a> ›
+      <a href={withBase('/')} class="ulink">Search</a> ›
+      <a href={withBase(`/molecule/${mols[0]?.slug}`)} class="ulink">{mols[0]?.name}</a> ›
       <span>{product.brand}</span>
     </nav>
 
@@ -198,6 +199,7 @@ const asOf = '2026-07-28';
 <script>
   import { buildLadder } from '../../lib/ladder';
   import { inr, inr0, channelLabel } from '../../lib/format';
+  import { withBase } from '../../lib/base';
 
   function rowHtml(r: any, best: boolean, unit: string) {
     const cta = r.verdict === 'CONSULT_REQUIRED'
@@ -242,7 +244,7 @@ const asOf = '2026-07-28';
         ocEl.innerHTML = o.isOvercharge
           ? `<div class="oc-h">You were overcharged.</div>
              <p>At <span class="mono">${inr(o.quotedUnitPrice)}/${unit}</span>, that’s <strong class="mono">${inr(o.overByPerUnit)}</strong> over the legal maximum of <span class="mono">${inr(o.legalMaxPerUnit)}</span> — about <strong class="mono">${inr(o.overByTotal)}</strong> too much for ${qty} ${unit}s. You can report this to the NPPA.</p>
-             <a class="btn btn-accent btn-sm" href="/check-price">How to complain <span class="arrow">→</span></a>`
+             <a class="btn btn-accent btn-sm" href="${withBase('/check-price')}">How to complain <span class="arrow">→</span></a>`
           : `<div class="oc-h ok">Within the legal maximum.</div>
              <p>At <span class="mono">${inr(o.quotedUnitPrice)}/${unit}</span> you’re paying at or below the ceiling of <span class="mono">${inr(o.legalMaxPerUnit)}</span>. Still — the Jan Aushadhi option above is cheaper.</p>`;
       } else { ocEl.hidden = true; }

@@ -2,6 +2,7 @@
 import Layout from '../../components/Layout.astro';
 import { kendras, products, formulationById } from '../../lib/mock';
 import { inr } from '../../lib/format';
+import { withBase } from '../../lib/base';
 
 export function getStaticPaths() {
   return kendras.map((k) => ({ params: { code: k.code } }));
@@ -15,7 +16,7 @@ const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
 ---
 <Layout title={`${shortName} — Jan Aushadhi kendra · Salt`} description={`${k.name}, ${k.address}, ${k.pincode}. Generic medicines at 50–90% below branded prices.`}>
   <section class="wrap page">
-    <nav class="crumbs mono muted"><a href="/kendra" class="ulink">Kendras</a> › <span>{shortName}</span></nav>
+    <nav class="crumbs mono muted"><a href={withBase('/kendra')} class="ulink">Kendras</a> › <span>{shortName}</span></nav>
 
     <div class="kd-head" data-reveal>
       <div>
@@ -24,7 +25,7 @@ const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
         <p class="lede">{k.address}, {k.district}, {k.state} — {k.pincode}</p>
         <div class="cluster kd-actions">
           <a class="btn btn-accent" href={mapsUrl} target="_blank" rel="noopener">Get directions <span class="arrow">↗</span></a>
-          <a class="btn btn-outline" href="/kendra">Find another near you <span class="arrow">→</span></a>
+          <a class="btn btn-outline" href={withBase('/kendra')}>Find another near you <span class="arrow">→</span></a>
         </div>
         <p class="pill pill-line kd-stock">ⓘ Stock is not verified — call ahead before travelling.</p>
       </div>
@@ -40,7 +41,7 @@ const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
       {stocked.map((p, i) => {
         const f = formulationById.get(p.formulationId)!;
         return (
-          <a class="kd-item card card-pad" href={`/medicine/${p.slug}`} data-reveal data-reveal-delay={i * 40}>
+          <a class="kd-item card card-pad" href={withBase(`/medicine/${p.slug}`)} data-reveal data-reveal-delay={i * 40}>
             <div class="between">
               <strong>{f.label}</strong>
               <span class="pill pill-leaf mono">{inr(p.mrp / p.packSize)}/{f.packUnit}</span>

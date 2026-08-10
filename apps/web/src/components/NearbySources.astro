@@ -2,6 +2,7 @@
 // Clickable list of nearby cheaper sources (Jan Aushadhi kendras) for a pincode.
 // Server-renders an initial list; the client updates it as the pincode changes.
 import { findNearbyKendras, demoPincodes } from '../lib/kendra';
+import { withBase } from '../lib/base';
 interface Props { pincode?: string; limit?: number; heading?: string; compact?: boolean }
 const { pincode = '560034', limit = 4, heading = 'Nearby cheaper sources', compact = false } = Astro.props;
 const initial = findNearbyKendras(pincode, limit);
@@ -16,7 +17,7 @@ const initial = findNearbyKendras(pincode, limit);
   <p class="muted mono nearby-note">ⓘ Jan Aushadhi kendras — generics at 50–90% below branded. Stock unverified; call ahead.</p>
   <div class="nearby-list" data-list>
     {initial.results.map((k) => (
-      <a class="nsrc" href={`/kendra/${k.code}`}>
+      <a class="nsrc" href={withBase(`/kendra/${k.code}`)}>
         <span class="nsrc-dist pill pill-teal mono">{k.distanceKm} km</span>
         <span class="nsrc-body">
           <span class="nsrc-name">{k.name.replace('Jan Aushadhi Kendra — ', '')}</span>
@@ -51,6 +52,7 @@ const initial = findNearbyKendras(pincode, limit);
 
 <script>
   import { findNearbyKendras } from '../lib/kendra';
+  import { withBase } from '../lib/base';
   function esc(s: string) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string)); }
   function wire(root: HTMLElement) {
     if (root.dataset.wired) return; root.dataset.wired = '1';
@@ -62,7 +64,7 @@ const initial = findNearbyKendras(pincode, limit);
       if (!/^\d{6}$/.test(v)) return;
       const { centroidKnown, results } = findNearbyKendras(v, limit);
       if (!centroidKnown) { list.innerHTML = `<p class="muted" style="font-size:var(--step--1)">No demo coordinates for ${esc(v)} — try a chip below.</p>`; return; }
-      list.innerHTML = results.map((k) => `<a class="nsrc" href="/kendra/${encodeURIComponent(k.code)}">
+      list.innerHTML = results.map((k) => `<a class="nsrc" href="${withBase('/kendra/' + encodeURIComponent(k.code))}">
         <span class="nsrc-dist pill pill-teal mono">${k.distanceKm} km</span>
         <span class="nsrc-body"><span class="nsrc-name">${esc(k.name.replace('Jan Aushadhi Kendra — ', ''))}</span><span class="muted nsrc-addr">${esc(k.address)}, ${k.pincode}</span></span>
         <span class="nsrc-arrow arrow">→</span></a>`).join('');

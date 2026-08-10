@@ -59,6 +59,16 @@ Last updated: 2026-08-10.
 
 ## C. Accounts / infra for later milestones (Milestone 8+)
 
+- [ ] **GitHub Pages — TEMPORARY live preview (active now).** While Cloudflare is
+      being set up, `.github/workflows/web-gh-pages.yml` builds the site under the
+      project sub-path and publishes it to **https://hackedxd.github.io/namak/** —
+      no accounts, no secrets. **One-time switch-on:** repo **Settings → Pages →
+      Source: "GitHub Actions"**. If the deploy is blocked because the
+      `github-pages` environment is limited to the default branch, either add
+      `claude/salt-medicine-price-index-x6cjxu` under **Settings → Environments →
+      github-pages → Deployment branches**, or merge to the default branch.
+      **To revert to Cloudflare-only:** delete `web-gh-pages.yml` (the `base` is
+      env-gated on `PAGES_BASE`, so nothing else needs touching).
 - [ ] **Cloudflare account** — Pages, Workers, D1, KV, R2 (all free tier). Needed
       to deploy the API + site and to move the raw store from local disk to R2.
       - **To turn on the site auto-deploy** (the `.github/workflows/web-pages.yml`

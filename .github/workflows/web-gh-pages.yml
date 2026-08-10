@@ -1,0 +1,81 @@
+# TEMPORARY live preview on GitHub Pages.
+#
+# Cloudflare Pages (web-pages.yml) stays the intended production target — this
+# workflow exists only to get a zero-account public preview of the UI while the
+# Cloudflare account is being set up. It builds the site under the project-site
+# sub-path (https://<owner>.github.io/namak/) and deploys it with GitHub's own
+# Pages actions — no secrets, no external accounts.
+#
+# The ONLY thing that makes this a "sub-path" build is the PAGES_BASE env var
+# below; astro.config.mjs is env-gated on it (base is undefined without it), and
+# every internal link goes through `withBase()` (src/lib/base.ts). So reverting
+# to Cloudflare-only is just: delete this file. Nothing else changes.
+#
+# One-time setup by the repo owner:
+#   Settings → Pages → Build and deployment → Source: "GitHub Actions".
+# If the `github-pages` environment is restricted to the default branch, either
+# allow the dev branch there or merge to the default branch — see the report.
+
+name: Web · GitHub Pages (temporary preview)
+
+on:
+  push:
+    branches: [claude/salt-medicine-price-index-x6cjxu, main]
+    paths:
+      - 'apps/web/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/web-gh-pages.yml'
+  workflow_dispatch: {}
+
+# GitHub Pages needs these three; id-token is for the deploy handshake.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel an in-progress Pages deployment (GitHub's own recommendation).
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # The two knobs that switch the build to the /namak/ project sub-path.
+      PAGES_BASE: /namak
+      PAGES_SITE: https://hackedxd.github.io
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4 # version comes from the root package.json "packageManager"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the site (sub-path base)
+        run: pnpm --filter @salt/web build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -4,6 +4,7 @@ import ProvenanceNote from '../../components/ProvenanceNote.astro';
 import { formulations, moleculesOf, productsForFormulation } from '../../lib/mock';
 import { buildLadder } from '../../lib/ladder';
 import { inr, channelLabel } from '../../lib/format';
+import { withBase } from '../../lib/base';
 
 export function getStaticPaths() {
   return formulations.map((f) => ({ params: { slug: f.slug } }));
@@ -16,7 +17,7 @@ const flagship = productsForFormulation(f.id).find((p) => p.channel === 'branded
 ---
 <Layout title={`${f.label} — price ladder · Salt`} description={`Every brand of ${f.label} ranked by price, with the NPPA legal maximum.`}>
   <section class="wrap page">
-    <nav class="crumbs mono muted"><a href="/" class="ulink">Search</a> › <a href={`/molecule/${mols[0]?.slug}`} class="ulink">{mols[0]?.name}</a> › <span>{f.label}</span></nav>
+    <nav class="crumbs mono muted"><a href={withBase('/')} class="ulink">Search</a> › <a href={withBase(`/molecule/${mols[0]?.slug}`)} class="ulink">{mols[0]?.name}</a> › <span>{f.label}</span></nav>
     <div class="between fh" data-reveal>
       <div>
         <h1 class="serif fh-title">{f.label}</h1>
@@ -26,13 +27,13 @@ const flagship = productsForFormulation(f.id).find((p) => p.channel === 'branded
     </div>
 
     <div class="between ladder-head" data-reveal><h2 class="serif">Ranked by price · 30 {f.packUnit}s</h2>
-      <a href={`/medicine/${flagship.slug}`} class="btn btn-outline btn-sm">Adjust quantity & pincode <span class="arrow">→</span></a></div>
+      <a href={withBase(`/medicine/${flagship.slug}`)} class="btn btn-outline btn-sm">Adjust quantity & pincode <span class="arrow">→</span></a></div>
     <ol class="ladder">
       {l.rows.map((r, i) => (
         <li class:list={['lrow', { best: i === 0 }]} data-reveal data-reveal-delay={i * 40}>
           <span class="lrank mono">{i + 1}</span>
           <div class="lmain">
-            <div class="lbrand"><a href={`/medicine/${r.product.slug}`} class="ulink">{r.product.brand}</a> <span class="pill pill-line lch">{channelLabel[r.product.channel]}</span>{r.overCeiling && <span class="pill pill-clay">over ceiling</span>}</div>
+            <div class="lbrand"><a href={withBase(`/medicine/${r.product.slug}`)} class="ulink">{r.product.brand}</a> <span class="pill pill-line lch">{channelLabel[r.product.channel]}</span>{r.overCeiling && <span class="pill pill-clay">over ceiling</span>}</div>
             <div class="lsub muted mono">{r.product.manufacturer} · {r.product.packSize}-{f.packUnit} pack · {inr(r.unitPrice)}/{f.packUnit}</div>
           </div>
           <div class="lcost"><span class="lcost-num mono">{inr(r.effectiveCost)}</span><span class="lcost-lbl muted mono">{r.packsNeeded} pack{r.packsNeeded > 1 ? 's' : ''}</span></div>

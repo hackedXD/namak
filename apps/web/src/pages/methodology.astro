@@ -1,5 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
+import { withBase } from '../lib/base';
 const toc = [
   ['neutrality', 'Why we’re neutral'],
   ['channels', 'The four channels'],
@@ -55,13 +56,13 @@ const toc = [
 
         <section id="freshness" data-reveal>
           <h2 class="serif">Freshness & provenance</h2>
-          <p>Every raw source file is archived byte-for-byte before we parse it, so any number can be replayed and audited. Each price carries its source and snapshot date, one tap away. If a source goes stale we serve the last good data with a visible marker rather than an error — and publish the freshness of every source openly on the <a href="/sources" class="ulink">Sources</a> page.</p>
+          <p>Every raw source file is archived byte-for-byte before we parse it, so any number can be replayed and audited. Each price carries its source and snapshot date, one tap away. If a source goes stale we serve the last good data with a visible marker rather than an error — and publish the freshness of every source openly on the <a href={withBase('/sources')} class="ulink">Sources</a> page.</p>
         </section>
 
         <section id="dispute" data-reveal>
           <h2 class="serif">Disputing a price</h2>
           <p>If you’re a manufacturer or pharmacy and a price looks wrong, we want to fix it — transparently. Corrections are applied as new, dated rows (we never quietly edit history), and the correction is visible on the product page. This is the single most credibility-preserving thing we do.</p>
-          <a href="/check-price" class="btn btn-accent">Check a price you were quoted <span class="arrow">→</span></a>
+          <a href={withBase('/check-price')} class="btn btn-accent">Check a price you were quoted <span class="arrow">→</span></a>
         </section>
       </article>
     </div>

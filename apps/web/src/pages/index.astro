@@ -6,6 +6,7 @@ import { conversionForProduct } from '../lib/convert';
 import { moleculesOf } from '../lib/mock';
 import { formulationById } from '../lib/mock';
 import { inr, inr0, channelLabel } from '../lib/format';
+import { withBase } from '../lib/base';
 
 const demo = conversionForProduct('dolo-650', 30);
 const f = formulationById.get(demo.branded.formulationId)!;
@@ -37,11 +38,11 @@ const popular = [
           <SearchBox big autofocus placeholder="Type a brand — e.g. Dolo 650, Telma 40…" />
           <div class="popular cluster">
             <span class="muted mono pop-label">Try</span>
-            {popular.map(([label, href]) => <a href={href} class="chip">{label}</a>)}
+            {popular.map(([label, href]) => <a href={withBase(href!)} class="chip">{label}</a>)}
           </div>
         </div>
         <div class="hero-or mono">or</div>
-        <a href="/scan" class="scan-cta" data-reveal data-reveal-delay="230">
+        <a href={withBase('/scan')} class="scan-cta" data-reveal data-reveal-delay="230">
           <span class="scan-cta-label mono">2 · Scan a prescription</span>
           <span class="scan-cta-icon" aria-hidden="true">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 12h10"></path></svg>
@@ -86,7 +87,7 @@ const popular = [
       </div>
 
       <div class="conv-footcta" data-reveal>
-        <a href={`/medicine/${demo.branded.slug}`} class="btn btn-ink btn-lg">See the full comparison for {demo.branded.brand} <span class="arrow">→</span></a>
+        <a href={withBase(`/medicine/${demo.branded.slug}`)} class="btn btn-ink btn-lg">See the full comparison for {demo.branded.brand} <span class="arrow">→</span></a>
         <span class="muted mono conv-note">same molecule · same strength · same salt & release — checked, not guessed</span>
       </div>
     </div>
@@ -99,7 +100,7 @@ const popular = [
         <p class="eyebrow">The whole prescription at once</p>
         <h2>Scan it. We find a cheaper generic for every line.</h2>
         <p class="lede">Photograph the prescription — we read each medicine, name its generic, price the basket, and show where to buy nearby. You confirm every line; nothing is stored.</p>
-        <a href="/scan" class="btn btn-accent btn-lg">Scan a prescription <span class="arrow">→</span></a>
+        <a href={withBase('/scan')} class="btn btn-accent btn-lg">Scan a prescription <span class="arrow">→</span></a>
       </div>
       <ol class="scan-steps">
         <li><span class="ss-n mono">01</span><div><strong>Read every line</strong><p class="muted">Brand, strength, form — resolved to the exact formulation.</p></div></li>
@@ -117,7 +118,7 @@ const popular = [
         <h3 class="side-h serif">Check the legal maximum on any price.</h3>
         <p class="muted">Many medicines have a statutory ceiling. If you were charged more, that’s not a markup — it’s illegal. A quick side-check, one tap away.</p>
       </div>
-      <a href="/check-price" class="btn btn-outline">Overcharge check <span class="arrow">→</span></a>
+      <a href={withBase('/check-price')} class="btn btn-outline">Overcharge check <span class="arrow">→</span></a>
     </div>
   </section>
 
@@ -144,7 +145,7 @@ const popular = [
       <div class="cta card card-pad paper-tex" data-reveal>
         <h2 class="cta-title">Start with a brand you have at home.</h2>
         <div class="cta-search"><SearchBox big /></div>
-        <p class="cta-or muted">…or <a href="/scan" class="ulink">scan a prescription →</a></p>
+        <p class="cta-or muted">…or <a href={withBase('/scan')} class="ulink">scan a prescription →</a></p>
       </div>
     </div>
   </section>

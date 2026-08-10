@@ -3,6 +3,7 @@ import Layout from '../../components/Layout.astro';
 import { molecules, formulationsForMolecule, productsForFormulation, ceilingByFormulation } from '../../lib/mock';
 import { buildLadder } from '../../lib/ladder';
 import { inr } from '../../lib/format';
+import { withBase } from '../../lib/base';
 
 export function getStaticPaths() {
   return molecules.map((m) => ({ params: { slug: m.slug } }));
@@ -17,7 +18,7 @@ const rows = forms.map((f) => {
 ---
 <Layout title={`${m.name} — brands, prices & the legal maximum · Salt`} description={`${m.name}: ${m.klass}. Every formulation and brand ranked by price, with the NPPA ceiling.`}>
   <section class="wrap page">
-    <nav class="crumbs mono muted"><a href="/" class="ulink">Search</a> › <span>{m.name}</span></nav>
+    <nav class="crumbs mono muted"><a href={withBase('/')} class="ulink">Search</a> › <span>{m.name}</span></nav>
     <div class="mol-head" data-reveal>
       <div>
         <div class="cluster">
@@ -38,7 +39,7 @@ const rows = forms.map((f) => {
     <h2 class="serif sec-h" data-reveal>Formulations</h2>
     <div class="forms grid">
       {rows.map(({ f, l, brands }, i) => (
-        <a class="fcard card card-pad" href={`/formulation/${f.slug}`} data-reveal data-reveal-delay={i * 60}>
+        <a class="fcard card card-pad" href={withBase(`/formulation/${f.slug}`)} data-reveal data-reveal-delay={i * 60}>
           <div class="between">
             <div>
               <div class="fcard-label serif">{f.label}</div>

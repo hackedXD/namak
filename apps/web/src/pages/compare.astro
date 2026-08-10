@@ -38,6 +38,7 @@ import { products, formulationById } from '../lib/mock';
   import { productBySlug, formulationById, moleculesOf } from '../lib/mock';
   import { buildLadder } from '../lib/ladder';
   import { inr, channelLabel } from '../lib/format';
+  import { withBase } from '../lib/base';
 
   function wire(root: HTMLElement) {
     if (root.dataset.wired) return; root.dataset.wired = '1';
@@ -83,7 +84,7 @@ import { products, formulationById } from '../lib/mock';
           <div><dt>For 30 ${c.f.packUnit}s</dt><dd class="mono" style="font-weight:700">${inr(c.eff)}</dd></div>
           <div><dt>Legal max</dt><dd class="mono">${c.l.legalMaxPerUnit ? inr(c.l.legalMaxPerUnit) : '—'} ${c.over ? '<span class="pill pill-clay">over</span>' : ''}</dd></div>
         </dl>
-        <a class="btn btn-outline btn-sm btn-block" href="/medicine/${c.p.slug}">Full ladder →</a>
+        <a class="btn btn-outline btn-sm btn-block" href="${withBase('/medicine/' + c.p.slug)}">Full ladder →</a>
       </div>`;
       colsEl.innerHTML = card(A, A.eff <= B.eff) + card(B, B.eff < A.eff);
     };

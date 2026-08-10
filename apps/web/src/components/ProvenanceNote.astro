@@ -1,6 +1,7 @@
 ---
 import { sources } from '../lib/mock';
 import { prettyDate } from '../lib/format';
+import { withBase } from '../lib/base';
 interface Props { sourceIds: string[]; asOf: string }
 const { sourceIds, asOf } = Astro.props;
 const used = sources.filter((s) => sourceIds.includes(s.id));
@@ -23,7 +24,7 @@ const used = sources.filter((s) => sourceIds.includes(s.id));
         </li>
       ))}
     </ul>
-    <a href="/sources" class="ulink mono prov-all">See all sources & freshness →</a>
+    <a href={withBase('/sources')} class="ulink mono prov-all">See all sources & freshness →</a>
   </div>
 </details>
 <style>

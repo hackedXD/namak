@@ -1,15 +1,18 @@
 ---
 import SearchBox from './SearchBox.astro';
+import { withBase } from '../lib/base';
 const path = Astro.url.pathname;
 const nav = [
   { href: '/kendra', label: 'Find a kendra' },
   { href: '/methodology', label: 'Methodology' },
   { href: '/sources', label: 'Sources' },
 ];
+// `path` already includes the base at runtime; compare against based hrefs.
+const isActive = (href: string) => path.startsWith(withBase(href));
 ---
 <header class="site-header" data-header>
   <div class="wrap head-inner">
-    <a href="/" class="brand" aria-label="Salt home">
+    <a href={withBase('/')} class="brand" aria-label="Salt home">
       <span class="brand-mark" aria-hidden="true">S</span>
       <span class="brand-word">Salt</span>
     </a>
@@ -18,9 +21,9 @@ const nav = [
 
     <nav class="head-nav" aria-label="Primary">
       {nav.map((n) => (
-        <a href={n.href} class:list={['navlink', 'ulink', { active: path.startsWith(n.href) }]}>{n.label}</a>
+        <a href={withBase(n.href)} class:list={['navlink', 'ulink', { active: isActive(n.href) }]}>{n.label}</a>
       ))}
-      <a href="/scan" class:list={['btn', 'btn-accent', 'btn-sm', 'scan-nav', { active: path.startsWith('/scan') }]}>
+      <a href={withBase('/scan')} class:list={['btn', 'btn-accent', 'btn-sm', 'scan-nav', { active: isActive('/scan') }]}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 12h10"></path></svg>
         Scan
       </a>
